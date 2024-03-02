@@ -1,2 +1,4 @@
 # exedump
-Dumping information for various PC executable formats, primarily DOS, Windows and OS/2
+Dumping information for various PC executable formats, primarily DOS, Windows and OS/2.
+
+Still WIP.
