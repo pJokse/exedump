@@ -88,6 +88,8 @@ void dumpomf() {
                 fprintf(stdout, "\n");
                 break;
             case OMF_MODEND32:
+                fprintf(stdout, "MODEND32: TBD");
+                fprintf(stdout, "\n");
                 is32bit = 0xFF;
                 break;
             case OMF_MODEND16:
@@ -103,6 +105,8 @@ void dumpomf() {
                 fprintf(stdout, "\n");
                 break;
             case OMF_PUBDEF32:
+                fprintf(stdout, "PUBDEF32: TBD");
+                fprintf(stdout, "\n");
                 is32bit = 0xFF;
                 break;
             case OMF_PUBDEF16:
@@ -381,6 +385,8 @@ void dumpomf() {
                 }
                 break;
             case OMF_LEDATA32:
+                fprintf(stdout, "LEDATA32: TBD");
+                fprintf(stdout, "\n");
                 is32bit = 0xFF;
                 break;
             case OMF_LEDATA16:
@@ -395,6 +401,8 @@ void dumpomf() {
                 fprintf(stdout, "\n");
                 break;
             case OMF_LIDATA32:
+                fprintf(stdout, "LIDATA32: TBD");
+                fprintf(stdout, "\n");
                 is32bit = 0xFF;
                 break;
             case OMF_LIDATA16:
@@ -442,6 +450,8 @@ void dumpomf() {
                 }
                 break;
             case OMF_LEXTDEF32:
+                fprintf(stdout, "LEXTDEF32: TBD");
+                fprintf(stdout, "\n");
                 is32bit = 0xFF;
                 break;
             case OMF_LEXTDEF16:
@@ -460,6 +470,8 @@ void dumpomf() {
                 }
                 break;
             case OMF_LPUBDEF32:
+                fprintf(stdout, "LPUBDEF32: TBD");
+                fprintf(stdout, "\n");
                 is32bit = 0xFF;
                 break;
             case OMF_LPUBDEF16:
@@ -488,6 +500,8 @@ void dumpomf() {
                 }
                 break;
             case OMF_COMDAT32:
+                fprintf(stdout, "COMDAT32: TBD");
+                fprintf(stdout, "\n");
                 is32bit = 0xFF;
                 break;
             case OMF_COMDAT16:
