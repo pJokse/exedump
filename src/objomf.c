@@ -48,22 +48,22 @@ void dumpomf() {
                 fprintf(stdout, "\n");
                 break;
             case OMF_COMENT:
-                fprintf(stdout, "COMENT: ");
+                fprintf(stdout, "COMENT:\n");
                 omf_comment_type = readbyte(record_offset);
                 record_offset++;
                 omf_comment_class = readbyte(record_offset);
                 record_offset++;
                 switch (omf_comment_type) {
                     case OMF_COMENT_TYPE_NO_LIST:
-                        fprintf(stdout, "Don't list, ");
+                        fprintf(stdout, "- Don't list\n");
                         break;
                     case OMF_COMENT_TYPE_NO_PURGE:
-                        fprintf(stdout, "Don't purge, ");
+                        fprintf(stdout, "- Don't purge\n");
                         break;
                     case 0x00:
                         break;
                     default:
-                        fprintf(stdout, "Unknown COMENT Type 0x%02x ", omf_comment_type);
+                        fprintf(stdout, "- Unknown COMENT Type 0x%02x\n", omf_comment_type);
                         break;
                 }
                 switch (omf_comment_class) {
@@ -73,19 +73,87 @@ void dumpomf() {
                         break;
                     case OMF_COMENT_CLASS_LINK_PASS_SEPERATOR:
                         break;*/
+                    case OMF_COMENT_CLASS_MEMORY_MODEL:
+                        fprintf(stdout, "- Memory model: ");
+                        for (int i = 0; i < omf_record_header->record_size - 3; i++) {
+                            // fprintf(stdout, "%c", readbyte(record_offset + i));
+                            switch (readbyte(record_offset + i)) {
+                                case 'O':
+                                     fprintf(stdout, "Optimized");
+                                    break;
+                                case '0':
+                                    fprintf(stdout, "8086");
+                                    break;
+                                case '1':
+                                    fprintf(stdout, "80186");
+                                    break;
+                                case '2':
+                                    fprintf(stdout, "80286");
+                                    break;
+                                case '3':
+                                    fprintf(stdout, "80386");
+                                    break;
+                                case 'A':
+                                    fprintf(stdout, "68000");
+                                    break;
+                                case 'B':
+                                    fprintf(stdout, "68010");
+                                    break;
+                                case 'C':
+                                    fprintf(stdout, "68020");
+                                    break;
+                                case 'D':
+                                    fprintf(stdout, "68030");
+                                    break;
+                                case 's':
+                                    fprintf(stdout, "small");
+                                    break;
+                                case 'm':
+                                    fprintf(stdout, "medium");
+                                    break;
+                                case 'c':
+                                    fprintf(stdout, "compact");
+                                    break;
+                                case 'l':
+                                    fprintf(stdout, "large");
+                                    break;
+                                case 'h':
+                                    fprintf(stdout, "huge");
+                                    break;
+                            default:
+                                fprintf(stdout, "Unknown: %c, ", readbyte(record_offset + i));
+                                break;
+                            }
+                            if (i < omf_record_header->record_size - 4) fprintf(stdout, ", "); // Don't write out ', ' after last item
+                        }
+                        fprintf(stdout, "\n");
+                    case OMF_COMENT_CLASS_OMF_EXT:
+                        fprintf(stdout, "- Has OMF extensions\n");
+                        break;
+                    case OMF_COMENT_CLASS_NEW_OMF_EXT:
+                        fprintf(stdout, "- Contains new OMF extensions\n");
+                        break;
                     case OMF_COMENT_CLASS_LIBMOD:
                         string_length = readbyte(record_offset);
                         record_offset++;
-                        fprintf(stdout, "Library module: ");
+                        fprintf(stdout, "- Library module: ");
                         for (int i = 0; i < string_length; i++) {
                             fprintf(stdout, "%c", readbyte(record_offset + i));
                         }
+                        fprintf(stdout, "\n");
+                        break;
+                    case OMF_COMENT_CLASS_BORLAND_DEPENDENCY_FILES:
+                        record_offset = record_offset + 5;
+                        fprintf(stdout, "- Dependency: ");
+                        for (int i = 0; i < omf_record_header->record_size - 8; i++) {
+                            fprintf(stdout, "%c", readbyte(record_offset + i));
+                        }
+                        fprintf(stdout, "\n");
                         break;
                     default:
-                        fprintf(stdout, "Unknown COMENT Class 0x%02x ", omf_comment_class);
+                        fprintf(stdout, "- Unknown COMENT Class 0x%02x\n", omf_comment_class);
                         break;
                 }
-                fprintf(stdout, "\n");
                 break;
             case OMF_MODEND32:
                 fprintf(stdout, "MODEND32: TBD");
