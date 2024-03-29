@@ -142,7 +142,7 @@ void dumpomf() {
                         }
                         fprintf(stdout, "\n");
                         break;
-                    case OMF_COMENT_CLASS_BORLAND_DEPENDENCY_FILES:
+                    case OMF_COMENT_CLASS_TYPE_DEPENDENCY_FILE:
                         record_offset = record_offset + 5;
                         fprintf(stdout, "- Dependency: ");
                         for (int i = 0; i < omf_record_header->record_size - 8; i++) {
@@ -153,6 +153,16 @@ void dumpomf() {
                     default:
                         fprintf(stdout, "- Unknown COMENT Class 0x%02x\n", omf_comment_class);
                         break;
+                        /*
+                        0x00
+                        0x9e
+                        0x9f
+                        0xa2
+                        0xa8
+                        0xdf
+                        0xfd
+                        0xfe
+                        */
                 }
                 break;
             case OMF_MODEND32:
@@ -213,11 +223,11 @@ void dumpomf() {
                         record_offset++;
                     }
                     if (omf_record_header->record_size < string_length + 6) {
-                        fprintf(stdout, "Type 0x%04x", readword(record_offset));
+                        fprintf(stdout, " Type 0x%04x", readword(record_offset));
                         record_offset = record_offset + 2;
                     }
                     else {
-                        fprintf(stdout, "Type 0x%02x", readbyte(record_offset));
+                        fprintf(stdout, " Type 0x%02x", readbyte(record_offset));
                         record_offset++;
                     }
                     fprintf(stdout, "\n");
@@ -277,8 +287,8 @@ void dumpomf() {
                     record_offset++;
                 }
                 fprintf(stdout, "Groupname index: 0x%04x\n", group_name_index);
-                fprintf(stdout, "- ");
                 while (record_offset < offset + omf_record_header->record_size - 1) {
+                    fprintf(stdout, "- ");
                     segment_type = readbyte(record_offset);
                     record_offset++;
                     if (readbyte(record_offset) & 0x80) {
@@ -290,13 +300,13 @@ void dumpomf() {
                         record_offset++;
                     }
                     if (segment_type != 0xFF) {
-                        fprintf(stdout, "0x%02x type not supported, ", segment_type);
+                        fprintf(stdout, "0x%02x type not supported", segment_type);
                     }
                     else {
-                        fprintf(stdout, "0x%02x = 0x%04x, ", segment_type, segment_index);
+                        fprintf(stdout, "0x%02x = 0x%04x", segment_type, segment_index);
                     }
+                    fprintf(stdout, "\n");
                 }
-                fprintf(stdout, "\n");
                 break;
             case OMF_FIXUP32:
                 is32bit = 0xFF;
@@ -358,7 +368,7 @@ void dumpomf() {
                                 fprintf(stdout, "32bit loader-resolved offset\n");
                                 break;
                             default:
-                                fprintf(stdout, "- Unknown LOCATION type 0x%04x\n", (fixup & 0x3C00));
+                                fprintf(stdout, "Unknown LOCATION type 0x%04x\n", (fixup & 0x3C00));
                                 break;
                         }
                         fprintf(stdout, "- LOCATION position: 0x%04x\n", (fixup & 0x03FF));
@@ -436,6 +446,9 @@ void dumpomf() {
                         case 0x58:
                             fprintf(stdout, "- Specified by EXTDEF index only\n");
                             break;
+                        default:
+                            fprintf(stdout, "- Unknown 0x%02x\n", fixup_record);
+                            break;
                         }
                         fprintf(stdout, "- Thred: 0x%1x\n", (fixup_record & 0x03));
                         record_offset++;
@@ -453,34 +466,44 @@ void dumpomf() {
                 }
                 break;
             case OMF_LEDATA32:
-                fprintf(stdout, "LEDATA32: TBD");
-                fprintf(stdout, "\n");
                 is32bit = 0xFF;
-                break;
             case OMF_LEDATA16:
-                uint16_t enumerated_data_offset;
+                uint32_t enumerated_data_offset;
                 is32bit ? fprintf(stdout, "LEDATA32: ") : fprintf(stdout, "LEDATA16: ");
-                segment_index = readbyte(record_offset);
-                record_offset++;
-                enumerated_data_offset = readword(record_offset);
-                record_offset = record_offset + 2;
-                fprintf(stdout, "Segment index: 0x%02x, Enumerated data offset: 0x%04x\n", segment_index, enumerated_data_offset);
+                if (is32bit) {
+                    segment_index = readword(record_offset);
+                    record_offset = record_offset + 2;
+                    enumerated_data_offset = readdword(record_offset);
+                    record_offset = record_offset + 4;
+                }
+                else {
+                    segment_index = readbyte(record_offset);
+                    record_offset++;
+                    enumerated_data_offset = readword(record_offset);
+                    record_offset = record_offset + 2;
+                }
+                fprintf(stdout, "Segment index: 0x%04x, Enumerated data offset: 0x%08x\n", segment_index, enumerated_data_offset);
                 print_hex_dump(record_offset, omf_record_header->record_size - 3, record_offset);
                 fprintf(stdout, "\n");
                 break;
             case OMF_LIDATA32:
-                fprintf(stdout, "LIDATA32: TBD");
-                fprintf(stdout, "\n");
                 is32bit = 0xFF;
-                break;
             case OMF_LIDATA16:
-                uint16_t iterated_data_offset;
+                uint32_t iterated_data_offset;
                 is32bit ?  fprintf(stdout, "LIDATA32: ") : fprintf(stdout, "LIDATA16: ");
-                segment_index = readbyte(record_offset);
-                record_offset++;
-                iterated_data_offset = readword(record_offset);
-                record_offset = record_offset + 2;
-                fprintf(stdout, "Segment index: 0x%02x, Iteerated data offset: 0x%04x\n", segment_index, iterated_data_offset);
+                if (is32bit) {
+                    segment_index = readword(record_offset);
+                    record_offset = record_offset + 2;
+                    iterated_data_offset = readdword(record_offset);
+                    record_offset = record_offset + 4;
+                }
+                else {
+                    segment_index = readbyte(record_offset);
+                    record_offset++;
+                    iterated_data_offset = readword(record_offset);
+                    record_offset = record_offset + 2;
+                }
+                fprintf(stdout, "Segment index: 0x%04x, Iteerated data offset: 0x%08x\n", segment_index, iterated_data_offset);
                 print_hex_dump(record_offset, omf_record_header->record_size - 3, record_offset);
                 fprintf(stdout, "\n");
                 break;
@@ -518,10 +541,7 @@ void dumpomf() {
                 }
                 break;
             case OMF_LEXTDEF32:
-                fprintf(stdout, "LEXTDEF32: TBD");
-                fprintf(stdout, "\n");
                 is32bit = 0xFF;
-                break;
             case OMF_LEXTDEF16:
                 is32bit ? fprintf(stdout, "LEXTDEF32:\n") : fprintf(stdout, "LEXTDEF16:\n");
                 while (record_offset < offset + omf_record_header->record_size - 1) {
@@ -532,8 +552,8 @@ void dumpomf() {
                         fprintf(stdout, "%c", readbyte(record_offset));
                         record_offset++;
                     }
-                    fprintf(stdout, "Type 0x%02x", readbyte(record_offset));
-                    record_offset++;
+                    fprintf(stdout, " Type 0x%04x", readbyte(record_offset) & 0x80 ? readindex(record_offset) : readbyte(record_offset));
+                    readbyte(record_offset) & 0x80 ? record_offset = record_offset + 2: record_offset++;
                     fprintf(stdout, "\n");
                 }
                 break;
@@ -634,6 +654,7 @@ void dumpomf() {
                 fprintf(stdout, "Unkown record type 0x%02x, size: %d bytes\n", omf_record_header->record_type, omf_record_header->record_size);
                 break;
         }
+        is32bit = 0;
         fprintf(stdout, "- Record size: %d bytes\n", omf_record_header->record_size);
         offset = offset + omf_record_header->record_size;
         records_count++;

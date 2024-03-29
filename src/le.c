@@ -115,8 +115,7 @@ void le_print_vxd_info(struct le_vxd vxd) {
 }
 
 void le_print_header(const struct le_header *header) {
-    if (header->magic == 0x454C) fprintf(stdout, "Magic: LE\n");
-    else fprintf(stdout, "Magic: LX\n");
+    (header->magic == 0x454C) ? fprintf(stdout, "Magic: LE\n") : fprintf(stdout, "Magic: LX\n");
     fprintf(stdout, "\n");
     fprintf(stdout, "Byte order: ");
     le_print_byte_order(header->byte_order);

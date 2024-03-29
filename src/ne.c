@@ -7,24 +7,24 @@
 
 void ne_print_header_flags(uint16_t flags) {
     fprintf(stdout, "Flags: 0x%08x\n", flags);
-    if (flags & 0x8000) { fprintf(stdout, "- Not a process\n"); }
-    if (flags & 0x4000) { fprintf(stdout, "- Non conforming program\n"); }
-    if (flags & 0x2000) { fprintf(stdout, "- Errors in image\n"); }
-    if (flags & 0x0800) { fprintf(stdout, "- Bound as family app\n"); }
-    if ((flags & 0x0700) == 0x0300) { fprintf(stdout, "- Uses Presentation Manager Windowing API\n"); }
-    if ((flags & 0x0700) == 0x0200) { fprintf(stdout, "- Compatible with Presentation Manager Windowing\n"); }
-    if ((flags & 0x0700) == 0x0100) { fprintf(stdout, "- Not compatible with Presentation Manager Windowing\n"); }
-    if ((flags & 0x0700) == 0x0000) { fprintf(stdout, "- No subsystem\n"); }
-    if (flags & 0x0080) { fprintf(stdout, "- Floating point instructions\n"); }
-    if (flags & 0x0040) { fprintf(stdout, "- 386 Instructions\n"); }
-    if (flags & 0x0020) { fprintf(stdout, "- 286 Instructions\n"); }
-    if (flags & 0x0010) { fprintf(stdout, "- 8086 Instructions\n"); }
-    if (flags & 0x0008) { fprintf(stdout, "- Runs in Protected mode only\n"); }
-    if (flags & 0x0004) { fprintf(stdout, "- Global initialization\n"); }
-    if ((flags & 0x0003) == 0x0) { fprintf(stdout, "- No DGROUP\n"); }
-    if ((flags & 0x0003) == 0x1) { fprintf(stdout, "- Single DGROUP\n"); }
-    if ((flags & 0x0003) == 0x2) { fprintf(stdout, "- Multiple DGROUPs\n"); }
-    if ((flags & 0x0003) == 0x3) { fprintf(stdout, "- Unknown DGROUP type 3\n"); }
+    if (flags & 0x8000) fprintf(stdout, "- Not a process\n");
+    if (flags & 0x4000) fprintf(stdout, "- Non conforming program\n");
+    if (flags & 0x2000) fprintf(stdout, "- Errors in image\n");
+    if (flags & 0x0800) fprintf(stdout, "- Bound as family app\n");
+    if ((flags & 0x0700) == 0x0300) fprintf(stdout, "- Uses Presentation Manager Windowing API\n");
+    if ((flags & 0x0700) == 0x0200) fprintf(stdout, "- Compatible with Presentation Manager Windowing\n");
+    if ((flags & 0x0700) == 0x0100) fprintf(stdout, "- Not compatible with Presentation Manager Windowing\n");
+    if ((flags & 0x0700) == 0x0000) fprintf(stdout, "- No subsystem\n");
+    if (flags & 0x0080) fprintf(stdout, "- Floating point instructions\n");
+    if (flags & 0x0040) fprintf(stdout, "- 386 Instructions\n");
+    if (flags & 0x0020) fprintf(stdout, "- 286 Instructions\n");
+    if (flags & 0x0010) fprintf(stdout, "- 8086 Instructions\n");
+    if (flags & 0x0008) fprintf(stdout, "- Runs in Protected mode only\n");
+    if (flags & 0x0004) fprintf(stdout, "- Global initialization\n");
+    if ((flags & 0x0003) == 0x0) fprintf(stdout, "- No DGROUP\n");
+    if ((flags & 0x0003) == 0x1) fprintf(stdout, "- Single DGROUP\n");
+    if ((flags & 0x0003) == 0x2) fprintf(stdout, "- Multiple DGROUPs\n");
+    if ((flags & 0x0003) == 0x3) fprintf(stdout, "- Unknown DGROUP type 3\n");
 }
 
 void ne_print_header_taget_os(uint8_t target_os) {
@@ -34,11 +34,11 @@ void ne_print_header_taget_os(uint8_t target_os) {
 
 void ne_print_header_os2_flags(uint8_t os2_exe_flags) {
     fprintf(stdout, "OS/2 EXE flags: %d (0x%08x)\n", os2_exe_flags, os2_exe_flags);
-    if (os2_exe_flags & 0x0001) { fprintf(stdout, "- Long filename support\n"); }
-    if (os2_exe_flags & 0x0002) { fprintf(stdout, "- 2.x protected mode\n"); }
-    if (os2_exe_flags & 0x0004) { fprintf(stdout, "- 2.x proportional fonts\n"); }
-    if (os2_exe_flags & 0x0008) { fprintf(stdout, "- fast-load area\n"); }
-    if (os2_exe_flags & 0xfff0) { fprintf(stdout, "- Unknown flags\n"); }
+    if (os2_exe_flags & 0x0001) fprintf(stdout, "- Long filename support\n");
+    if (os2_exe_flags & 0x0002) fprintf(stdout, "- 2.x protected mode\n");
+    if (os2_exe_flags & 0x0004) fprintf(stdout, "- 2.x proportional fonts\n");
+    if (os2_exe_flags & 0x0008) fprintf(stdout, "- fast-load area\n");
+    if (os2_exe_flags & 0xfff0) fprintf(stdout, "- Unknown flags\n");
 }
 
 void ne_print_header(const struct ne_header *header) {
