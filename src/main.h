@@ -22,7 +22,8 @@ enum FILETYPES {
     FILETYPE_PHARLAP_P3,
     FILETYPE_OMF_OBJ,
     FILETYPE_OMF_LIB,
-    FILETYPE_SYM
+    FILETYPE_SYM,
+    FILETYPE_W3
 };
 
 typedef struct {
@@ -40,5 +41,6 @@ void dumpne();
 void dumple();
 void dumppe();
 void dumpomf();
+void dumpw3();
 
 #endif

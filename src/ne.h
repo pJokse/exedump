@@ -4,16 +4,6 @@
 #include <stdint.h>
 #include "mz.h"
 
-static const char *const ne_exetypes[] = {
-    "unknown",
-    "OS/2",
-    "Windows (16-bit)",
-    "European Dos 4.x",
-    "Windows 386 (32-bit)",
-    "BOSS",
-    0
-};
-
 #pragma pack(1)
 
 struct ne_header {

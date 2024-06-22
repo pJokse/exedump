@@ -29,7 +29,38 @@ void ne_print_header_flags(uint16_t flags) {
 
 void ne_print_header_taget_os(uint8_t target_os) {
     fprintf(stdout, "Target OS: %d (0x%08x)\n", target_os, target_os);
-    fprintf(stdout, "- %s\n", ne_exetypes[target_os]);
+    switch (target_os) {
+        case 0x00:
+            fprintf(stdout, "- unknown");
+            break;
+        case 0x01:
+            fprintf(stdout, "- OS/2");
+            break;
+        case 0x02:
+            fprintf(stdout, "- Windows (16 bit)");
+            break;
+        case 0x03:
+            fprintf(stdout, "- European DOS 4.x");
+            break;
+        case 0x04:
+            fprintf(stdout, "- Windows 386 (32-bit)");
+            break;
+        case 0x05:
+            fprintf(stdout, "- Borland Operating System Services, HX DPMI-16");
+            break;
+        case 0x06:
+            fprintf(stdout, "- HX DPMI-32");
+            break;
+        case 0x81:
+            fprintf(stdout, "- Phar lap 286 DOS Extender emulating OS/2");
+            break;
+        case 0x82:
+            fprintf(stdout, "- Phar lap 386 DOS Extender emulating Windows");
+            break;
+        default:
+            fprintf(stdout, "- unknown");
+            break;
+   }
 }
 
 void ne_print_header_os2_flags(uint8_t os2_exe_flags) {

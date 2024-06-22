@@ -6,8 +6,7 @@
 #define realaddress(segment, offset) (((uint32_t)segment < 0xFFF0) ? (uint32_t)((segment * 0x10) + offset):(uint32_t)(((segment * 0x10) + offset) - 0x100000))
 
 #pragma pack(1)
-struct mz_header
-{
+struct mz_header {
     uint8_t signature[2];
     uint16_t bytes_in_last_block;
     uint16_t blocks_in_file;

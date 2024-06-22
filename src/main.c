@@ -46,7 +46,8 @@ static const filetype exe_filetype[] = { // ENUM filetype, short text, long desc
     { FILETYPE_PHARLAP_P3, "P3", "Phar Lap 386 Executable (.exe, .exp)" },
     { FILETYPE_OMF_OBJ, "OBJ_OMF", "OMF Object File" },
     { FILETYPE_OMF_LIB, "LIB_OMF", "OMF Library File" },
-    { FILETYPE_SYM, "SYM", "Windows Symbolic Debug File (*.sym)" }
+    { FILETYPE_SYM, "SYM", "Windows Symbolic Debug File (*.sym)" },
+    { FILETYPE_W3, "W3", "Windows VxD Compacted file (*.exe)" },
 };
 
 uint8_t get_filetype(char *filename) {
@@ -76,6 +77,8 @@ uint8_t get_filetype(char *filename) {
                     return FILETYPE_NE;
                 case 0x4550:
                     return FILETYPE_PE;
+                case 0x3357:
+                    return FILETYPE_W3;
                 default:
                     return FILETYPE_MZ;
             }
@@ -145,6 +148,8 @@ void dump(char *filename) {
         case FILETYPE_OMF_LIB:
             dumpomf();
             break;
+        case FILETYPE_W3:
+            dumpw3();
         default:
             break;
     }

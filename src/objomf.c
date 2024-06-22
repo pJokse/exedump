@@ -655,7 +655,7 @@ void dumpomf() {
                 break;
         }
         is32bit = 0;
-        fprintf(stdout, "- Record size: %d bytes\n", omf_record_header->record_size);
+        fprintf(stdout, "- Record size: %d bytes, Checksum: 0x%02x\n", omf_record_header->record_size, readbyte(offset + omf_record_header->record_size - 1));
         offset = offset + omf_record_header->record_size;
         records_count++;
         if (omf_record_header->record_type == OMF_LIBEND) break;
