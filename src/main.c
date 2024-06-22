@@ -39,7 +39,7 @@ static const filetype exe_filetype[] = { // ENUM filetype, short text, long desc
     { FILETYPE_MZ, "MZ", "MS-DOS MZ Executable (.exe)" },
     { FILETYPE_LE, "LE", "Windows VxD, OS/2 Executable (.exe, .dll, .vxd, .386, .sys)" },
     { FILETYPE_LX, "LX", "OS/2 Executable (.exe, .dll)" },
-    { FILETYPE_NE, "NE", "Windows New Executable (.exe, .dll, .fon, .ttf, .drv)" },
+    { FILETYPE_NE, "NE", "Windows New Executable (.exe, .dll, .fon, .drv)" },
     { FILETYPE_PE, "PE", "Windows Portable Executable (.exe, .dll)" },
     { FILETYPE_PHARLAP_MP, "MP", "Old Phar Lap Executable (.exe, .exp) "},
     { FILETYPE_PHARLAP_P2, "P2", "Phar Lap 286 Executable (.exe, .exp)" },
