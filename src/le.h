@@ -50,7 +50,7 @@ struct le_header {
     uint32_t fixup_page_table_offset;
     uint32_t fixup_record_table_offset;
     uint32_t import_name_table_offset;
-    uint32_t number_of_input_table_entries;
+    uint32_t number_of_import_table_entries;
     uint32_t import_procedure_name_table_offset;
     uint32_t per_page_checksum_table_offset;
     uint32_t enumerated_data_pages_offset;

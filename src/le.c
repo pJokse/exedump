@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 #include "le.h"
 #include "main.h"
 #include "hexdump.h"
@@ -151,7 +152,7 @@ void le_print_header(const struct le_header *header) {
     fprintf(stdout, "Fixup page table offset: %d (0x%08x)\n", header->fixup_page_table_offset, header->fixup_page_table_offset);
     fprintf(stdout, "Fixup record table offset: %d (0x%08x)\n", header->fixup_record_table_offset, header->fixup_record_table_offset);
     fprintf(stdout, "Import name table offset: %d (0x%08x)\n", header->import_name_table_offset, header->import_name_table_offset);
-    fprintf(stdout, "Number of input table entries: %d (0x%08x)\n", header->number_of_input_table_entries, header->number_of_input_table_entries);
+    fprintf(stdout, "Number of import table entries: %d (0x%08x)\n", header->number_of_import_table_entries, header->number_of_import_table_entries);
     fprintf(stdout, "Import procedure name table offset: %d (0x%08x)\n", header->import_procedure_name_table_offset, header->import_procedure_name_table_offset);
     fprintf(stdout, "Per page checksum table offset: %d (0x%08x)\n", header->per_page_checksum_table_offset, header->per_page_checksum_table_offset);
     fprintf(stdout, "Enumerated data pages offset: %d (0x%08x)\n", header->enumerated_data_pages_offset, header->enumerated_data_pages_offset);
@@ -166,6 +167,242 @@ void le_print_header(const struct le_header *header) {
     if (header->magic == 0x454C) le_print_vxd_info(header->reserved.vxd);
 };
 
+void le_print_object_flags(uint32_t flags, uint16_t magic) {
+    fprintf(stdout, "- Flags: 0x%08x\n", flags);
+    if (flags & 0x0001) fprintf(stdout, "\t- Readable object\n");
+    if (flags & 0x0002) fprintf(stdout, "\t- Writeable object\n");
+    if (flags & 0x0004) fprintf(stdout, "\t- Executeable object\n");
+    if (flags & 0x0008) fprintf(stdout, "\t- Resource object\n");
+    if (flags & 0x0010) fprintf(stdout, "\t- Discardable object\n");
+    if (flags & 0x0020) fprintf(stdout, "\t- Sharable object\n");
+    if (flags & 0x0040) fprintf(stdout, "\t- Object has preload pages\n");
+    if (flags & 0x0080) fprintf(stdout, "\t- Object has invalid pages\n");
+    if (flags & 0x0100) {
+        if (magic == 0x454C) fprintf(stdout, "\t- Object is permanent and swapable\n"); // LE
+        else if (magic == 0x584C) fprintf(stdout, "\t- Object has zero fill\n"); // LX
+    }
+    if (flags & 0x0200) fprintf(stdout, "\t- Object is permanent and resident\n");
+    if ((flags & 0x0300) & (magic == 0x584C)) fprintf(stdout, "\t - Object is permanent and contiguous\n");
+    if (flags & 0x0400) fprintf(stdout, "\t- Object is permanent and lockable\n");
+    if (flags & 0x1000) fprintf(stdout, "\t- 16:16 alias required\n");
+    if ((flags & 0x2000)) fprintf(stdout, "\t- Big setting\n");
+    else fprintf(stdout, "\t- Default setting\n");
+    if (flags & 0x4000) fprintf(stdout, "\t- Conforming for code\n");
+    if (flags & 0x1000) {
+        if (flags & 0x8000) fprintf(stdout, "\t- Object IO privilege level: 1\n");
+        else fprintf(stdout, "\t- Object IO privilege level: 0\n"); 
+    }
+}
+
+void le_print_exports(struct le le) {
+    size_t offset;
+    uint8_t buffer[256];
+    uint16_t ordinal;
+
+    if (le.le_header->resident_names_table_offset > 0) {
+        fprintf(stdout, "\n");
+        fprintf(stdout, "Resident exports:\n");
+        fprintf(stdout, "Ordinal\t\tName\n");
+        offset = le.le_header->resident_names_table_offset + le.mz_header->new_header_offset;
+        while (readbyte(offset) > 0) {
+            memset(buffer, 0, 256);
+            int len = readbyte(offset);
+            offset++;
+            for (int i = 0; i < len; i++) {
+                buffer[i] = readbyte(offset);
+                offset++;
+            }
+            ordinal = readword(offset);
+            offset = offset + 2;
+            fprintf(stdout, "%u\t\t%s\n", ordinal, buffer);
+        }
+    }
+    if (le.le_header->non_resident_name_table_offset > 0) {
+        fprintf(stdout, "\n");
+        fprintf(stdout, "Non-resident exports:\n");
+        fprintf(stdout, "Ordinal\t\tName\n");
+        offset = le.le_header->non_resident_name_table_offset;
+        while (readbyte(offset) > 0) {
+            memset(buffer, 0, 256);
+            int len = readbyte(offset);
+            offset++;
+            for (int i = 0; i < len; i++) {
+                buffer[i] = readbyte(offset);
+                offset++;
+            }
+            ordinal = readword(offset);
+            offset = offset + 2;
+            fprintf(stdout, "%u\t\t%s\n", ordinal, buffer);
+        }
+    }
+}
+
+void le_print_imports(struct le le) {
+    size_t offset;
+    uint8_t buffer[256];
+    uint16_t ordinal;
+
+    if (le.le_header->number_of_import_table_entries > 0) {
+        fprintf(stdout, "\n");
+        fprintf(stdout, "Import table:\n");
+        fprintf(stdout, "Ordinal\t\tName\n");
+        offset = le.le_header->import_name_table_offset + le.mz_header->new_header_offset;
+        for (int i = 0; i < le.le_header->number_of_import_table_entries; i++) {
+            uint8_t size = readbyte(offset);
+            memset(buffer, 0, 256);
+            offset++;
+            for (int j = 0; j < size; j++) {
+                buffer[j] = readbyte(offset);
+                offset++;
+            }
+            ordinal = readword(offset);
+            offset++;
+            fprintf(stdout, "%u\t\t%s\n", ordinal, buffer);
+        }
+    }
+
+    if (le.le_header->import_procedure_name_table_offset > 0) {
+        fprintf(stdout, "\n");
+        fprintf(stdout, "Import procedure table:\n");
+        offset = le.le_header->import_name_table_offset + le.mz_header->new_header_offset;
+        if (readbyte(offset) == 0) offset++; // Skip 0-byte
+        while (readbyte(offset) > 0)
+        {
+            fprintf(stdout, "%c",readbyte(offset));
+            offset++;
+        }
+        fprintf(stdout, "\n");
+    }
+}
+
+void le_print_page_flags(uint16_t flags) {
+    fprintf(stdout, "- Page flags: 0x%04x\n", flags);
+    switch (flags) {
+        case 0x0000:
+            fprintf(stdout, "\t- Legal Physical Page in the module (Offset from Preload Page Section)\n");
+            break;
+        case 0x0001:
+            fprintf(stdout,"\t- Iterated Data Page (Offset from Iterated Data Pages Section)\n");
+            break;
+        case 0x0002:
+            fprintf(stdout,"\t- Invalid Page (zero)\n");
+            break;
+        case 0x0003:
+            fprintf(stdout,"\t- Zero Filled Page (zero)\n");
+            break;
+        case 0x0004:
+            fprintf(stdout,"\t- Unused\n");
+            break;
+        case 0x0005:
+            fprintf(stdout,"\t- Compressed Page (Offset from Preload Pages Section)\n");
+            break;
+    }
+}
+
+void le_print_objects_map(struct le le) {
+    size_t offset;
+
+    if (le.le_header->object_table_offset > 0) {
+        fprintf(stdout, "\n");
+        fprintf(stdout, "Objects:\n");
+        offset = le.le_header->object_table_offset + le.mz_header->new_header_offset;
+        for (int i = 0; i < le.le_header->number_of_objects; i++) {
+            uint32_t size;
+            uint32_t relocation_base_address;
+            uint32_t flags;
+            uint32_t page_map_index;
+            uint32_t page_map_entires;
+            uint32_t reserved;
+
+            size = readdword(offset);
+            offset = offset + 4;
+            relocation_base_address = readdword(offset);
+            offset = offset + 4;
+            flags = readdword(offset);
+            offset = offset + 4;
+            page_map_index = readdword(offset);
+            offset = offset + 4;
+            page_map_entires = readdword(offset);
+            offset = offset + 4;
+            reserved = readdword(offset);
+            offset = offset + 4;
+            fprintf(stdout, "Object 0x%04x (%u)\n", i, i);
+            fprintf(stdout, "- Virtual size: 0x%08x (%u bytes)\n", size, size);
+            fprintf(stdout, "- Relocation base address: 0x%08x (%u)\n", relocation_base_address, relocation_base_address);
+            fprintf(stdout, "- Page map index: 0x%08x (%u)\n", page_map_index, page_map_index);
+            fprintf(stdout, "- Page map entries count 0x%08x (%u)\n", page_map_entires, page_map_entires);
+            le_print_object_flags(flags, le.le_header->magic);
+        }
+    }
+}
+void le_print_object_page_tables(struct le le) {
+    size_t offset;
+    
+    if (le.le_header->object_map_offset > 0) {
+        uint32_t page_data_offset;
+        uint16_t page_data_size;
+        uint16_t page_data_flags;
+
+        fprintf(stdout, "\nBROKEN FIXME!!!!!\n");
+        fprintf(stdout, "Object page table:\n");
+        for (int i = 0; i < le.le_header->number_of_pages; i++) {
+            if (le.le_header->magic == 0x454C) { // LE
+                offset = (i * le.le_header->exe_page_size) + le.le_header->object_map_offset + le.mz_header->new_header_offset;
+                page_data_offset = ((readbyte(offset) << 16) | (readbyte(offset + 1) << 8) | readbyte(offset + 2));
+                offset = offset + 3;
+                page_data_flags = readbyte(offset);
+                offset++;
+                if (i + 1 == le.le_header->number_of_pages) {
+                    page_data_size = le.le_header->page.size_of_last_page;
+                }
+                else {
+                    page_data_size = le.le_header->exe_page_size;
+                }
+            }
+            else { // LX
+                page_data_offset = readdword(offset);
+                offset = offset + 4;
+                page_data_size = readword(offset);
+                offset = offset + 2;
+                page_data_flags = readword(offset);
+                offset = offset + 2;
+            }
+            fprintf(stdout, "Page 0x%08x (%u)\n", i + 1, i + 1);
+            fprintf(stdout, "- Page Offset: 0x%08x (%u)\n", page_data_offset, page_data_offset);
+            fprintf(stdout, "- Page size: 0x%04x (%u bytes)\n", page_data_size, page_data_size);
+            le_print_page_flags(page_data_flags);
+            //print_hex_dump(page_data_offset, page_data_size, page_data_offset);
+        }
+    }
+}
+
+void le_print_modules_directive_table(struct le le) {
+    size_t offset;
+
+    if (le.le_header->number_of_module_directives > 0) {
+        fprintf(stdout, "\n");
+        fprintf(stdout, "Module directory table:\n");
+        fprintf(stdout, "Directive\t\tOffset\t\tLength\n");
+        offset = le.le_header->module_directives_table_offset;
+        for (int i = 0; i < le.le_header->number_of_module_directives; i++) {
+            uint16_t directive_number;
+            uint16_t directive_lenght;
+            uint32_t directive_offset;
+            directive_number = readword(offset);
+            offset = offset + 2;
+            directive_lenght = readword(offset);
+            offset = offset + 2;
+            directive_offset = readdword(offset);
+            offset = offset + 4;
+            fprintf(stdout, "%u\t\t0x%08x\t\t0x%04x (%u bytes)\n", directive_number, directive_offset, directive_lenght, directive_lenght);
+        }
+    }
+    else {
+        fprintf(stdout, "\n");
+        fprintf(stdout, "No module directive tables.\n");
+    }
+}
+
 void dumple() {
     struct le le;
 
@@ -173,5 +410,11 @@ void dumple() {
     le.le_header = readdata(le.mz_header->new_header_offset);
 
     le_print_header(le.le_header);
-
+    le_print_exports(le);
+    le_print_imports(le);
+    le_print_objects_map(le);
+    le_print_object_page_tables(le);
+    le_print_modules_directive_table(le);
+    //le_print_fixup_page_table(le);
+    //le_print_fixup_record_table(le);
 };

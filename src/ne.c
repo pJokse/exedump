@@ -30,9 +30,6 @@ void ne_print_header_flags(uint16_t flags) {
 void ne_print_header_taget_os(uint8_t target_os) {
     fprintf(stdout, "Target OS: %d (0x%08x)\n", target_os, target_os);
     switch (target_os) {
-        case 0x00:
-            fprintf(stdout, "- unknown");
-            break;
         case 0x01:
             fprintf(stdout, "- OS/2");
             break;
@@ -58,7 +55,7 @@ void ne_print_header_taget_os(uint8_t target_os) {
             fprintf(stdout, "- Phar lap 386 DOS Extender emulating Windows");
             break;
         default:
-            fprintf(stdout, "- unknown");
+            fprintf(stdout, "- Unknown");
             break;
    }
 }
@@ -68,7 +65,7 @@ void ne_print_header_os2_flags(uint8_t os2_exe_flags) {
     if (os2_exe_flags & 0x0001) fprintf(stdout, "- Long filename support\n");
     if (os2_exe_flags & 0x0002) fprintf(stdout, "- 2.x protected mode\n");
     if (os2_exe_flags & 0x0004) fprintf(stdout, "- 2.x proportional fonts\n");
-    if (os2_exe_flags & 0x0008) fprintf(stdout, "- fast-load area\n");
+    if (os2_exe_flags & 0x0008) fprintf(stdout, "- Fast-load area\n");
     if (os2_exe_flags & 0xfff0) fprintf(stdout, "- Unknown flags\n");
 }
 
