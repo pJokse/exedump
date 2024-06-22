@@ -23,7 +23,7 @@ enum FILETYPES {
     FILETYPE_OMF_OBJ,
     FILETYPE_OMF_LIB,
     FILETYPE_SYM,
-    FILETYPE_W3
+    FILETYPE_W3,
 };
 
 typedef struct {

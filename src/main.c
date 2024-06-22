@@ -47,7 +47,7 @@ static const filetype exe_filetype[] = { // ENUM filetype, short text, long desc
     { FILETYPE_OMF_OBJ, "OBJ_OMF", "OMF Object File" },
     { FILETYPE_OMF_LIB, "LIB_OMF", "OMF Library File" },
     { FILETYPE_SYM, "SYM", "Windows Symbolic Debug File (*.sym)" },
-    { FILETYPE_W3, "W3", "Windows VxD Compacted file (*.exe)" },
+    { FILETYPE_W3, "W3", "Windows VxD Compacted file (*.exe, *.vxd)" },
 };
 
 uint8_t get_filetype(char *filename) {

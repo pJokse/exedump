@@ -12,4 +12,4 @@ Still WIP.
 - PE Windows Portable Executable (.exe, .dll)
 - OBJ/OMF OMF Object File
 - LIBOMF OMF Library File
-- W3 Windows VxD Compacted file (*.exe)
+- W3 Windows VxD Compacted file (*.exe, *.vxd)
