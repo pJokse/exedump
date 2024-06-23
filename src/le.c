@@ -245,7 +245,6 @@ void le_print_imports(struct le le) {
     if (le.le_header->number_of_import_table_entries > 0) {
         fprintf(stdout, "\n");
         fprintf(stdout, "Import table:\n");
-        fprintf(stdout, "Ordinal\t\tName\n");
         offset = le.le_header->import_name_table_offset + le.mz_header->new_header_offset;
         for (int i = 0; i < le.le_header->number_of_import_table_entries; i++) {
             uint8_t size = readbyte(offset);
@@ -255,23 +254,46 @@ void le_print_imports(struct le le) {
                 buffer[j] = readbyte(offset);
                 offset++;
             }
-            ordinal = readword(offset);
-            offset++;
-            fprintf(stdout, "%u\t\t%s\n", ordinal, buffer);
+
+            fprintf(stdout, "%s\n", buffer);
         }
     }
 
     if (le.le_header->import_procedure_name_table_offset > 0) {
         fprintf(stdout, "\n");
         fprintf(stdout, "Import procedure table:\n");
-        offset = le.le_header->import_name_table_offset + le.mz_header->new_header_offset;
-        if (readbyte(offset) == 0) offset++; // Skip 0-byte
-        while (readbyte(offset) > 0)
-        {
-            fprintf(stdout, "%c",readbyte(offset));
+        offset = le.le_header->import_procedure_name_table_offset + le.mz_header->new_header_offset;
+        if (readbyte(offset) == 0) {
             offset++;
+            while (readbyte(offset) > 0)
+            {
+                uint8_t len = readbyte(offset);
+                offset++;
+                for (int i = 0; i < len; i++) {
+                    fprintf(stdout, "%c",readbyte(offset));
+                    offset++;
+                }
+                fprintf(stdout, "\n");
+            }
         }
-        fprintf(stdout, "\n");
+        else if (readbyte(offset) < 0x20 && readbyte(offset) != 0) {
+            while (readbyte(offset) > 0) {
+                uint8_t len = readbyte(offset);
+                offset++;
+                for (int i = 0; i < len; i++) {
+                    fprintf(stdout, "%c",readbyte(offset));
+                    offset++;
+                }
+                fprintf(stdout, "\n");
+            }
+        }
+        else {
+            while (readbyte(offset) > 0) {
+                fprintf(stdout, "%c", readbyte(offset));
+                offset++;
+            }
+            fprintf(stdout, "\n");
+        }
     }
 }
 

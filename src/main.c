@@ -124,8 +124,8 @@ void dump(char *filename) {
     file_type = get_filetype(filename);
 
     fprintf(stdout, "File: %s\n", filename);
-    fprintf(stdout, "Size: %lu bytes (0x%08lX)\n", file_size, file_size);
-    //fprintf(stdout, "Extended Header Offset: %u\n", ((exe[0x3D] << 8) + exe[0x3C]));
+    fprintf(stdout, "Size: %lu bytes (0x%08lx)\n", file_size, file_size);
+    fprintf(stdout, "Extended Header Offset: %u (0x%04x)\n", ((binary[0x3D] << 8) + binary[0x3C]), ((binary[0x3D] << 8) + binary[0x3C]));
     fprintf(stdout, "Filetype: %s\n", exe_filetype[file_type].description);
 
     fclose(fd);
