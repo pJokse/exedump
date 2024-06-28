@@ -353,6 +353,7 @@ void le_print_objects_map(struct le le) {
             fprintf(stdout, "- Relocation base address: 0x%08x (%u)\n", relocation_base_address, relocation_base_address);
             fprintf(stdout, "- Page map index: 0x%08x (%u)\n", page_map_index, page_map_index);
             fprintf(stdout, "- Page map entries count 0x%08x (%u)\n", page_map_entires, page_map_entires);
+            fprintf(stdout, "- Reserved bytes: 0x%08x\n", reserved);
             le_print_object_flags(flags, le.le_header->magic);
         }
     }
@@ -364,33 +365,31 @@ void le_print_object_page_tables(struct le le) {
         uint32_t page_data_offset;
         uint16_t page_data_size;
         uint16_t page_data_flags;
+        uint32_t page_exe_offset;
 
         fprintf(stdout, "\nBROKEN FIXME!!!!!\n");
         fprintf(stdout, "Object page table:\n");
+        offset = le.le_header->object_map_offset + le.mz_header->new_header_offset;
         for (int i = 0; i < le.le_header->number_of_pages; i++) {
             if (le.le_header->magic == 0x454C) { // LE
-                offset = (i * le.le_header->exe_page_size) + le.le_header->object_map_offset + le.mz_header->new_header_offset;
                 page_data_offset = ((readbyte(offset) << 16) | (readbyte(offset + 1) << 8) | readbyte(offset + 2));
                 offset = offset + 3;
+                page_data_size = le.le_header->exe_page_size;
                 page_data_flags = readbyte(offset);
                 offset++;
-                if (i + 1 == le.le_header->number_of_pages) {
-                    page_data_size = le.le_header->page.size_of_last_page;
-                }
-                else {
-                    page_data_size = le.le_header->exe_page_size;
-                }
             }
             else { // LX
-                page_data_offset = readdword(offset);
+                page_data_offset = readdword(offset) << le.le_header->page.page_shift_offset;
                 offset = offset + 4;
                 page_data_size = readword(offset);
                 offset = offset + 2;
                 page_data_flags = readword(offset);
                 offset = offset + 2;
             }
+            page_exe_offset = le.le_header->object_table_offset + le.mz_header->new_header_offset + (page_data_offset * le.le_header->exe_page_size);
             fprintf(stdout, "Page 0x%08x (%u)\n", i + 1, i + 1);
             fprintf(stdout, "- Page Offset: 0x%08x (%u)\n", page_data_offset, page_data_offset);
+            fprintf(stdout, "- .EXE offset: 0x%08x (%u)\n", page_exe_offset, page_exe_offset);
             fprintf(stdout, "- Page size: 0x%04x (%u bytes)\n", page_data_size, page_data_size);
             le_print_page_flags(page_data_flags);
             //print_hex_dump(page_data_offset, page_data_size, page_data_offset);
