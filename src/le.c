@@ -173,14 +173,19 @@ void le_print_object_flags(uint32_t flags, uint16_t magic) {
     if (flags & 0x0002) fprintf(stdout, "\t- Writeable object\n");
     if (flags & 0x0004) fprintf(stdout, "\t- Executeable object\n");
     if (flags & 0x0008) fprintf(stdout, "\t- Resource object\n");
+    else fprintf(stdout, "\t- Non-resource object\n");
     if (flags & 0x0010) fprintf(stdout, "\t- Discardable object\n");
+    else fprintf(stdout, "\t- Non-discardable object\n");
     if (flags & 0x0020) fprintf(stdout, "\t- Sharable object\n");
+    else fprintf(stdout, "\t- Non-sharable object\n");
     if (flags & 0x0040) fprintf(stdout, "\t- Object has preload pages\n");
     if (flags & 0x0080) fprintf(stdout, "\t- Object has invalid pages\n");
+    else fprintf(stdout, "\t- Object has valid pages\n");
     if (flags & 0x0100) {
         if (magic == 0x454C) fprintf(stdout, "\t- Object is permanent and swapable\n"); // LE
         else if (magic == 0x584C) fprintf(stdout, "\t- Object has zero fill\n"); // LX
     }
+    else fprintf(stdout, "\t- Object is non-swapable\n");
     if (flags & 0x0200) fprintf(stdout, "\t- Object is permanent and resident\n");
     if ((flags & 0x0300) & (magic == 0x584C)) fprintf(stdout, "\t - Object is permanent and contiguous\n");
     if (flags & 0x0400) fprintf(stdout, "\t- Object is permanent and lockable\n");
@@ -188,7 +193,8 @@ void le_print_object_flags(uint32_t flags, uint16_t magic) {
     if ((flags & 0x2000)) fprintf(stdout, "\t- Big setting\n");
     else fprintf(stdout, "\t- Default setting\n");
     if (flags & 0x4000) fprintf(stdout, "\t- Conforming for code\n");
-    if (flags & 0x1000) {
+    else fprintf(stdout, "\t- Non-conforming code\n");
+    if (flags & 0x3000) {
         if (flags & 0x8000) fprintf(stdout, "\t- Object IO privilege level: 1\n");
         else fprintf(stdout, "\t- Object IO privilege level: 0\n"); 
     }
@@ -258,6 +264,7 @@ void le_print_imports(struct le le) {
             fprintf(stdout, "%s\n", buffer);
         }
     }
+    else fprintf(stdout, "\nNo import table.\n");
 
     if (le.le_header->import_procedure_name_table_offset > 0) {
         fprintf(stdout, "\n");
@@ -295,6 +302,7 @@ void le_print_imports(struct le le) {
             fprintf(stdout, "\n");
         }
     }
+    else fprintf(stdout, "\nNo import procedure table.\n");
 }
 
 void le_print_page_flags(uint16_t flags) {
@@ -332,8 +340,8 @@ void le_print_objects_map(struct le le) {
             uint32_t size;
             uint32_t relocation_base_address;
             uint32_t flags;
-            uint32_t page_map_index;
-            uint32_t page_map_entires;
+            uint32_t page_table_index;
+            uint32_t page_table_entries;
             uint32_t reserved;
 
             size = readdword(offset);
@@ -342,18 +350,18 @@ void le_print_objects_map(struct le le) {
             offset = offset + 4;
             flags = readdword(offset);
             offset = offset + 4;
-            page_map_index = readdword(offset);
+            page_table_index = readdword(offset);
             offset = offset + 4;
-            page_map_entires = readdword(offset);
+            page_table_entries = readdword(offset);
             offset = offset + 4;
             reserved = readdword(offset);
             offset = offset + 4;
             fprintf(stdout, "Object 0x%04x (%u)\n", i, i);
             fprintf(stdout, "- Virtual size: 0x%08x (%u bytes)\n", size, size);
             fprintf(stdout, "- Relocation base address: 0x%08x (%u)\n", relocation_base_address, relocation_base_address);
-            fprintf(stdout, "- Page map index: 0x%08x (%u)\n", page_map_index, page_map_index);
-            fprintf(stdout, "- Page map entries count 0x%08x (%u)\n", page_map_entires, page_map_entires);
-            fprintf(stdout, "- Reserved bytes: 0x%08x\n", reserved);
+            fprintf(stdout, "- Page map index: 0x%08x (%u)\n", page_table_index, page_table_index);
+            fprintf(stdout, "- Page map entries count 0x%08x (%u)\n", page_table_entries, page_table_entries);
+            if (reserved > 0) fprintf(stdout, "- Name: %c%c%c%c\n", reserved >> 24 & 0xFF, reserved >> 16 & 0xFF, reserved >> 8 & 0xFF, reserved & 0xFF);
             le_print_object_flags(flags, le.le_header->magic);
         }
     }
@@ -424,6 +432,110 @@ void le_print_modules_directive_table(struct le le) {
     }
 }
 
+void le_print_fixup_page_table(struct le le) {
+
+}
+
+void le_print_entry_table(struct le le) {
+    size_t offset;
+    uint16_t ordinal;
+
+    fprintf(stdout, "\n");
+    if (le.le_header->entry_table_offset > 0) {
+        fprintf(stdout, "Entry table:\n");
+        fprintf(stdout, "Type:\t\t\tTarget:\n");
+        offset = le.le_header->entry_table_offset + le.mz_header->new_header_offset;
+        ordinal = 1;
+        while (readbyte(offset) > 0) {
+            uint8_t count;
+            uint8_t type;
+            uint16_t obj_number;
+            uint8_t flags;
+            uint32_t obj_offset;
+            uint16_t callgate;
+
+            count = readbyte(offset);
+            offset++;
+            type = readbyte(offset);
+            offset++;
+            obj_number = readword(offset);
+            offset = offset + 2;
+
+            switch (type) {
+                case 0x00: // Unused
+                    break;
+                case 0x01: // 16bit entry
+                    fprintf(stdout, "16bit entry\t\tObject, %u ", obj_number);
+                    break;
+                case 0x02: // 286 gate entry call
+                    fprintf(stdout, "286 gate entry call\t\tObject, %u ", obj_number);
+                    break;
+                case 0x03: // 32bit entry
+                    fprintf(stdout, "32bit entry\t\tObject %u, ", obj_number);
+                    break;
+                case 0x04: // Forwarder entry
+                    fprintf(stdout, "Forwarder\n");
+                    break;
+                case 0x80: // Parameter typing info present
+                    fprintf(stdout, "16bit entry\t\tObject %u, ", obj_number);
+                    break;
+                default:
+                    fprintf(stdout, "Unknown\n");
+                    break;
+            }
+            for (int i = 0; count > 0; count--) {
+                if (i != 0) fprintf(stdout, "\n");
+                switch (type) {
+                case 0x00: // Unused
+                    break;
+                case 0x01: // 16bit entry
+                    flags = readbyte(offset);
+                    offset++;
+                    obj_offset = readdword(offset);
+                    offset = offset + 4;
+                    fprintf(stdout, "Ordinal: %u, Flags: 0x%02x, Offset: 0x%08x", ordinal, flags, obj_offset);
+                    break;
+                case 0x02: // 286 gate entry call
+                    flags = readbyte(offset);
+                    offset++;
+                    obj_offset = readdword(offset);
+                    offset = offset + 4;
+                    callgate = readword(offset);
+                    offset + 2;
+                    fprintf(stdout, "Ordinal: %u, Flags: 0x%02x, Callgate: 0x%04x, Offset 0x%08x", ordinal, flags, obj_offset);
+                    break;
+                case 0x03: // 32bit entry
+                    flags = readbyte(offset);
+                    offset++;
+                    obj_offset = readdword(offset);
+                    offset = offset + 4;
+                    fprintf(stdout, "Ordinal: %u, Flags: 0x%02x, Offset: 0x%08x", ordinal, flags, obj_offset);
+                    break;
+                case 0x04: // Forwarder entry
+                    flags = readbyte(offset);
+                    offset++;
+                    obj_offset = readdword(offset);
+                    offset = offset + 4;
+                    fprintf(stdout, "Ordinal: %u, Flags: 0x%02x, Offset: 0x%08x", ordinal, flags, obj_offset);
+                    break;
+                case 0x80: // Parameter typing info present
+                    fprintf(stdout, "0x80 BROKEN!\n");
+                    break;
+                default:
+                    fprintf(stdout, "Unknown\n");
+                    break;
+                }
+                ordinal++;
+                fprintf(stdout, "\n");
+            }
+        }
+
+    }
+    else {
+        fprintf(stdout, "No entry table.\n");
+    }
+}
+
 void dumple() {
     struct le le;
 
@@ -436,6 +548,7 @@ void dumple() {
     le_print_objects_map(le);
     le_print_object_page_tables(le);
     le_print_modules_directive_table(le);
-    //le_print_fixup_page_table(le);
+    le_print_fixup_page_table(le);
     //le_print_fixup_record_table(le);
+    le_print_entry_table(le);
 };
