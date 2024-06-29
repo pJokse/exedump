@@ -61,6 +61,8 @@ struct le_header {
     uint32_t autodata_segment_object_number;
     uint32_t debug_offset;
     uint32_t debug_size;
+    uint32_t num_inst_preload;   /* # of instance pages in preload sect*/
+    uint32_t num_inst_demand;    /*# instance pages in demand load sect*/
     uint32_t heap_size;
     uint32_t stack_size;
     union reserved {

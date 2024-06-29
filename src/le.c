@@ -539,6 +539,8 @@ void le_print_entry_table(struct le le) {
 void dumple() {
     struct le le;
 
+    fprintf(stdout, "DEBUG: %u sizeof struct le_header\n", sizeof(struct le_header));
+
     le.mz_header = readdata(0);
     le.le_header = readdata(le.mz_header->new_header_offset);
 
