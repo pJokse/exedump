@@ -386,7 +386,7 @@ void le_print_object_page_tables(struct le le) {
                 page_data_flags = readword(offset);
                 offset = offset + 2;
             }
-            page_exe_offset = le.le_header->object_table_offset + le.mz_header->new_header_offset + (page_data_offset * le.le_header->exe_page_size);
+            page_exe_offset = le.le_header->object_table_offset + le.mz_header->new_header_offset + (i * 0x18);
             fprintf(stdout, "Page 0x%08x (%u)\n", i + 1, i + 1);
             fprintf(stdout, "- Page Offset: 0x%08x (%u)\n", page_data_offset, page_data_offset);
             fprintf(stdout, "- .EXE offset: 0x%08x (%u)\n", page_exe_offset, page_exe_offset);
