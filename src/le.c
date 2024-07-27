@@ -347,6 +347,7 @@ void le_print_objects_map(struct le le) {
             size = readdword(offset);
             offset = offset + 4;
             relocation_base_address = readdword(offset);
+            relocation_base_address = le.mz_header->new_header_offset +  le.le_header->object_table_offset + (i * relocation_base_address);
             offset = offset + 4;
             flags = readdword(offset);
             offset = offset + 4;
