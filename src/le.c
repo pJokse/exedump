@@ -378,12 +378,18 @@ void le_print_object_page_tables(struct le le) {
 
         fprintf(stdout, "\nBROKEN FIXME!!!!!\n");
         fprintf(stdout, "Object page table:\n");
-        offset = le.le_header->object_map_offset + le.mz_header->new_header_offset;
         for (int i = 0; i < le.le_header->number_of_pages; i++) {
+            offset = le.mz_header->new_header_offset + le.le_header->object_table_offset + i * le.le_header->exe_page_size;
             if (le.le_header->magic == 0x454C) { // LE
+
                 page_data_offset = ((readbyte(offset) << 16) | (readbyte(offset + 1) << 8) | readbyte(offset + 2));
-                offset = offset + 3;
-                page_data_size = le.le_header->exe_page_size;
+                offset = offset + 4;
+                if (i + 1 == le.le_header->number_of_pages) {
+                    page_data_size = le.le_header->page.size_of_last_page;
+                }
+                else {
+                    page_data_size = le.le_header->exe_page_size;
+                }
                 page_data_flags = readbyte(offset);
                 offset++;
             }
@@ -395,10 +401,10 @@ void le_print_object_page_tables(struct le le) {
                 page_data_flags = readword(offset);
                 offset = offset + 2;
             }
-            page_exe_offset = le.le_header->object_table_offset + le.mz_header->new_header_offset + (i * 0x18);
+            //page_exe_offset = le.le_header->object_table_offset + le.le_header->object_table_offset + (i * 0x18);
             fprintf(stdout, "Page 0x%08x (%u)\n", i + 1, i + 1);
             fprintf(stdout, "- Page Offset: 0x%08x (%u)\n", page_data_offset, page_data_offset);
-            fprintf(stdout, "- .EXE offset: 0x%08x (%u)\n", page_exe_offset, page_exe_offset);
+            //fprintf(stdout, "- .EXE offset: 0x%08x (%u)\n", page_exe_offset, page_exe_offset);
             fprintf(stdout, "- Page size: 0x%04x (%u bytes)\n", page_data_size, page_data_size);
             le_print_page_flags(page_data_flags);
             //print_hex_dump(page_data_offset, page_data_size, page_data_offset);
@@ -434,7 +440,16 @@ void le_print_modules_directive_table(struct le le) {
 }
 
 void le_print_fixup_page_table(struct le le) {
-
+    size_t offset;
+    fprintf(stdout, "\n");
+    if (le.le_header->magic == 0x454C && le.le_header->reserved.vxd.windows_vxd_version_info_resource_length > 0) {
+        offset = le.le_header->reserved.vxd.windows_vxd_version_info_resource_offset;
+        fprintf(stdout, "DDB Info:\n");
+        print_hex_dump(offset, le.le_header->reserved.vxd.windows_vxd_version_info_resource_length, offset);
+    }
+    else {
+        fprintf(stdout, "No DDB.\n");
+    }
 }
 
 void le_print_entry_table(struct le le) {
@@ -537,6 +552,10 @@ void le_print_entry_table(struct le le) {
     }
 }
 
+void le_print_ddb(struct le le) {
+
+}
+
 void dumple() {
     struct le le;
 
@@ -554,4 +573,5 @@ void dumple() {
     le_print_fixup_page_table(le);
     //le_print_fixup_record_table(le);
     le_print_entry_table(le);
+    le_print_ddb(le);
 };
