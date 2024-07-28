@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include "main.h"
 
-static void print_hex_dump(size_t offset, uint16_t datasize, size_t printable_offset) {
+static void print_hex_dump(size_t offset, size_t datasize, size_t printable_offset) {
     uint16_t i, j;
     uint8_t leftover;
     leftover = datasize % 16;

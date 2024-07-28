@@ -440,16 +440,7 @@ void le_print_modules_directive_table(struct le le) {
 }
 
 void le_print_fixup_page_table(struct le le) {
-    size_t offset;
-    fprintf(stdout, "\n");
-    if (le.le_header->magic == 0x454C && le.le_header->reserved.vxd.windows_vxd_version_info_resource_length > 0) {
-        offset = le.le_header->reserved.vxd.windows_vxd_version_info_resource_offset;
-        fprintf(stdout, "DDB Info:\n");
-        print_hex_dump(offset, le.le_header->reserved.vxd.windows_vxd_version_info_resource_length, offset);
-    }
-    else {
-        fprintf(stdout, "No DDB.\n");
-    }
+
 }
 
 void le_print_entry_table(struct le le) {
@@ -553,7 +544,28 @@ void le_print_entry_table(struct le le) {
 }
 
 void le_print_ddb(struct le le) {
+    size_t offset;
+    fprintf(stdout, "\n");
+    if (le.le_header->magic == 0x454C && le.le_header->reserved.vxd.windows_vxd_version_info_resource_length > 0) {
+        offset = le.le_header->reserved.vxd.windows_vxd_version_info_resource_offset;
+        fprintf(stdout, "DDB Info:\n");
+        print_hex_dump(offset, le.le_header->reserved.vxd.windows_vxd_version_info_resource_length, offset);
+        fprintf(stdout, "\n");
+    }
+    else {
+        fprintf(stdout, "No DDB.\n");
+    }
+}
 
+void le_print_debug(struct le le) {
+    fprintf(stdout, "\n");
+    if (le.le_header->debug_size > 0) {
+        fprintf(stdout, "DEBUG section:\n");
+        print_hex_dump(le.le_header->debug_offset, le.le_header->debug_size, le.le_header->debug_offset);
+    }
+    else {
+        fprintf(stdout, "No DEBUG section.\n");
+    }
 }
 
 void dumple() {
@@ -574,4 +586,5 @@ void dumple() {
     //le_print_fixup_record_table(le);
     le_print_entry_table(le);
     le_print_ddb(le);
+    le_print_debug(le);
 };
