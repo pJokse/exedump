@@ -24,9 +24,9 @@ struct le_header {
     uint32_t exe_version;
     uint32_t exe_flags;
     uint32_t number_of_pages;
-    uint32_t starting_object_number;
+    uint32_t starting_object_number; // CS
     uint32_t eip;
-    uint32_t stack_object_number_for_pointer;
+    uint32_t stack_object_number_for_pointer; // SS
     uint32_t esp;
     uint32_t exe_page_size;
     union {

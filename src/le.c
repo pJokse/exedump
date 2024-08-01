@@ -115,56 +115,66 @@ void le_print_vxd_info(struct le_vxd vxd) {
     fprintf(stdout, "DDK version: %d.%d (0x%08x)\n", (vxd.ddk_version >> 8), vxd.ddk_version & 0xFF, vxd.ddk_version);
 }
 
-void le_print_header(const struct le_header *header) {
-    (header->magic == 0x454C) ? fprintf(stdout, "Magic: LE\n") : fprintf(stdout, "Magic: LX\n");
+void le_print_header(struct le le) {
+    (le.le_header->magic == 0x454C) ? fprintf(stdout, "Magic: LE\n") : fprintf(stdout, "Magic: LX\n");
     fprintf(stdout, "\n");
     fprintf(stdout, "Byte order: ");
-    le_print_byte_order(header->byte_order);
+    le_print_byte_order(le.le_header->byte_order);
     fprintf(stdout, "Word order: ");
-    le_print_byte_order(header->word_order);
-    fprintf(stdout, "EXE format level: %d (0x%08x)\n", header->exe_format_level, header->exe_format_level);
-    le_print_cpu_type(header->cpu_type);
-    le_print_os_type(header->os_type);
-    fprintf(stdout, "EXE version: %d (0x%08x)\n", header->exe_version, header->exe_version);
-    le_print_exe_flags(header->exe_flags);
-    fprintf(stdout, "Number of pages: %d (0x%08x)\n", header->number_of_pages, header->number_of_pages);
-    fprintf(stdout, "Object starting number: %d (0x%08x)\n", header->starting_object_number, header->starting_object_number);
-    fprintf(stdout, "EIP: %d (0x%08x)\n", header->eip, header->eip);
-    fprintf(stdout, "Stack object number: %d (0x%08x)\n", header->stack_object_number_for_pointer, header->stack_object_number_for_pointer);
-    fprintf(stdout, "ESP: %d (0x%08x)\n", header->esp, header->esp);
-    fprintf(stdout, "EXE page size: %d (0x%08x)\n", header->exe_page_size, header->exe_page_size);
-    if (header->magic == 0x454C) fprintf(stdout, "Size of last page: %d (0x%08x)\n", header->page.size_of_last_page, header->page.size_of_last_page);
-    else fprintf(stdout, "Page left shift offset: %d (0x%08x)\n", header->page.page_shift_offset, header->page.page_shift_offset);
-    fprintf(stdout, "Fixup section size: %d bytes (0x%08x)\n", header->fixup_section_size, header->fixup_section_size);
-    fprintf(stdout, "Fixup section checksum: %d (0x%08x)\n", header->fixup_section_checksum, header->fixup_section_checksum);
-    fprintf(stdout, "Loader section size: %d bytes (0x%08x)\n", header->loader_section_size, header->loader_section_size);
-    fprintf(stdout, "Loader section checksum: %d (0x%08x)\n", header->loader_section_checksum, header->loader_section_checksum);
-    fprintf(stdout, "Object table offset: %d (0x%08x)\n", header->object_table_offset, header->object_table_offset);
-    fprintf(stdout, "Number of objects: %d (0x%08x)\n", header->number_of_objects, header->number_of_objects);
-    fprintf(stdout, "Object map offset: %d (0x%08x)\n", header->object_map_offset, header->object_map_offset);
-    fprintf(stdout, "Iterated data map offset: %d (0x%08x)\n", header->iterated_data_map_offset, header->iterated_data_map_offset);
-    fprintf(stdout, "Resource table offset: %d (0x%08x)\n", header->resource_table_offset, header->resource_table_offset);
-    fprintf(stdout, "Number of resource table entries: %d (0x%08x)\n", header->number_of_resource_entries, header->number_of_resource_entries);
-    fprintf(stdout, "Resident names table offset: %d (0x%08x)\n", header->resident_names_table_offset, header->resident_names_table_offset);
-    fprintf(stdout, "Entry table offset: %d (0x%08x)\n", header->entry_table_offset, header->entry_table_offset);
-    fprintf(stdout, "Module directives table offset: %d (0x%08x)\n", header->module_directives_table_offset, header->module_directives_table_offset);
-    fprintf(stdout, "Number of module directives: %d (0x%08x)\n", header->number_of_module_directives, header->number_of_module_directives);
-    fprintf(stdout, "Fixup page table offset: %d (0x%08x)\n", header->fixup_page_table_offset, header->fixup_page_table_offset);
-    fprintf(stdout, "Fixup record table offset: %d (0x%08x)\n", header->fixup_record_table_offset, header->fixup_record_table_offset);
-    fprintf(stdout, "Import name table offset: %d (0x%08x)\n", header->import_name_table_offset, header->import_name_table_offset);
-    fprintf(stdout, "Number of import table entries: %d (0x%08x)\n", header->number_of_import_table_entries, header->number_of_import_table_entries);
-    fprintf(stdout, "Import procedure name table offset: %d (0x%08x)\n", header->import_procedure_name_table_offset, header->import_procedure_name_table_offset);
-    fprintf(stdout, "Per page checksum table offset: %d (0x%08x)\n", header->per_page_checksum_table_offset, header->per_page_checksum_table_offset);
-    fprintf(stdout, "Enumerated data pages offset: %d (0x%08x)\n", header->enumerated_data_pages_offset, header->enumerated_data_pages_offset);
-    fprintf(stdout, "Number of enumerated data pages: %d (0x%08x)\n", header->number_of_enumerated_data_pages, header->number_of_enumerated_data_pages);
-    fprintf(stdout, "Non-resident name table offset: %d (0x%08x)\n", header->non_resident_name_table_offset, header->non_resident_name_table_offset);
-    fprintf(stdout, "Non-resident name table size: %d bytes (0x%08x)\n", header->non_resident_name_table_size, header->non_resident_name_table_size);
-    fprintf(stdout, "Non-resident name table checksum: %d (0x%08x)\n", header->non_resident_name_table_checksum, header->non_resident_name_table_checksum);
-    fprintf(stdout, "Debug information offset: %d (0x%08x)\n", header->debug_offset, header->debug_offset);
-    fprintf(stdout, "Debug information size: %d bytes (0x%08x)\n", header->debug_size, header->debug_size);
-    fprintf(stdout, "Heap size: %d bytes (0x%08x)\n", header->heap_size, header->heap_size);
-    fprintf(stdout, "Stack size: %d bytes (0x%08x)\n", header->stack_size, header->stack_size);
-    if (header->magic == 0x454C) le_print_vxd_info(header->reserved.vxd);
+    le_print_byte_order(le.le_header->word_order);
+    fprintf(stdout, "EXE format level: %d (0x%08x)\n", le.le_header->exe_format_level, le.le_header->exe_format_level);
+    le_print_cpu_type(le.le_header->cpu_type);
+    le_print_os_type(le.le_header->os_type);
+    fprintf(stdout, "EXE version: %d (0x%08x)\n", le.le_header->exe_version, le.le_header->exe_version);
+    le_print_exe_flags(le.le_header->exe_flags);
+    fprintf(stdout, "Number of pages: %d (0x%08x)\n", le.le_header->number_of_pages, le.le_header->number_of_pages);
+    fprintf(stdout, "Object starting number: %d (0x%08x)\n", le.le_header->starting_object_number, le.le_header->starting_object_number);
+    fprintf(stdout, "EIP: %d (0x%08x)\n", le.le_header->eip, le.le_header->eip);
+    fprintf(stdout, "Stack object number: %d (0x%08x)\n", le.le_header->stack_object_number_for_pointer, le.le_header->stack_object_number_for_pointer);
+    fprintf(stdout, "ESP: %d (0x%08x)\n", le.le_header->esp, le.le_header->esp);
+    fprintf(stdout, "EXE page size: %d (0x%08x)\n", le.le_header->exe_page_size, le.le_header->exe_page_size);
+    if (le.le_header->magic == 0x454C) fprintf(stdout, "Size of last page: %d (0x%08x)\n", le.le_header->page.size_of_last_page, le.le_header->page.size_of_last_page);
+    else fprintf(stdout, "Page left shift offset: %d (0x%08x)\n", le.le_header->page.page_shift_offset, le.le_header->page.page_shift_offset);
+    fprintf(stdout, "Fixup section size: %d bytes (0x%08x)\n", le.le_header->fixup_section_size, le.le_header->fixup_section_size);
+    fprintf(stdout, "Fixup section checksum: %d (0x%08x)\n", le.le_header->fixup_section_checksum, le.le_header->fixup_section_checksum);
+    fprintf(stdout, "Loader section size: %d bytes (0x%08x)\n", le.le_header->loader_section_size, le.le_header->loader_section_size);
+    fprintf(stdout, "Loader section checksum: %d (0x%08x)\n", le.le_header->loader_section_checksum, le.le_header->loader_section_checksum);
+    fprintf(stdout, "Object table offset: %d (0x%08x)\n", le.le_header->object_table_offset, le.le_header->object_table_offset);
+    fprintf(stdout, "Object table offset in file: %d (0x%08x)\n", le.le_header->object_table_offset + le.mz_header->new_header_offset, le.le_header->object_table_offset + le.mz_header->new_header_offset);
+    fprintf(stdout, "Number of objects: %d (0x%08x)\n", le.le_header->number_of_objects, le.le_header->number_of_objects);
+    fprintf(stdout, "Object map offset: %d (0x%08x)\n", le.le_header->object_map_offset, le.le_header->object_map_offset);
+    fprintf(stdout, "Object map offset in file: %d (0x%08x)\n", le.le_header->object_map_offset + le.mz_header->new_header_offset, le.le_header->object_map_offset+ le.mz_header->new_header_offset);
+    fprintf(stdout, "Iterated data map offset: %d (0x%08x)\n", le.le_header->iterated_data_map_offset , le.le_header->iterated_data_map_offset);
+    fprintf(stdout, "Iterated data map offset in file: %d (0x%08x)\n", le.le_header->iterated_data_map_offset + le.mz_header->new_header_offset, le.le_header->iterated_data_map_offset + le.mz_header->new_header_offset);
+    fprintf(stdout, "Resource table offset: %d (0x%08x)\n", le.le_header->resource_table_offset, le.le_header->resource_table_offset);
+    fprintf(stdout, "Resource table offset in file: %d (0x%08x)\n", le.le_header->resource_table_offset + le.mz_header->new_header_offset, le.le_header->resource_table_offset + le.mz_header->new_header_offset);
+    fprintf(stdout, "Number of resource table entries: %d (0x%08x)\n", le.le_header->number_of_resource_entries, le.le_header->number_of_resource_entries);
+    fprintf(stdout, "Resident names table offset: %d (0x%08x)\n", le.le_header->resident_names_table_offset, le.le_header->resident_names_table_offset);
+    fprintf(stdout, "Resident names table offset in file: %d (0x%08x)\n", le.le_header->resident_names_table_offset + le.mz_header->new_header_offset, le.le_header->resident_names_table_offset + le.mz_header->new_header_offset);
+    fprintf(stdout, "Entry table offset: %d (0x%08x)\n", le.le_header->entry_table_offset, le.le_header->entry_table_offset);
+    fprintf(stdout, "Entry table offset in file: %d (0x%08x)\n", le.le_header->entry_table_offset + le.mz_header->new_header_offset, le.le_header->entry_table_offset + le.mz_header->new_header_offset);
+    fprintf(stdout, "Module directives table offset: %d (0x%08x)\n", le.le_header->module_directives_table_offset, le.le_header->module_directives_table_offset);
+    fprintf(stdout, "Module directives table offset in file: %d (0x%08x)\n", le.le_header->module_directives_table_offset + le.mz_header->new_header_offset, le.le_header->module_directives_table_offset + le.mz_header->new_header_offset);
+    fprintf(stdout, "Number of module directives: %d (0x%08x)\n", le.le_header->number_of_module_directives, le.le_header->number_of_module_directives);
+    fprintf(stdout, "Fixup page table offset: %d (0x%08x)\n", le.le_header->fixup_page_table_offset, le.le_header->fixup_page_table_offset);
+    fprintf(stdout, "Fixup page table offset in file: %d (0x%08x)\n", le.le_header->fixup_page_table_offset + le.mz_header->new_header_offset, le.le_header->fixup_page_table_offset + le.mz_header->new_header_offset);
+    fprintf(stdout, "Fixup record table offset: %d (0x%08x)\n", le.le_header->fixup_record_table_offset, le.le_header->fixup_record_table_offset);
+    fprintf(stdout, "Fixup record table offset in file: %d (0x%08x)\n", le.le_header->fixup_record_table_offset + le.mz_header->new_header_offset, le.le_header->fixup_record_table_offset + le.mz_header->new_header_offset);
+    fprintf(stdout, "Import name table offset: %d (0x%08x)\n", le.le_header->import_name_table_offset, le.le_header->import_name_table_offset);
+    fprintf(stdout, "Import name table offset in file: %d (0x%08x)\n", le.le_header->import_name_table_offset + le.mz_header->new_header_offset, le.le_header->import_name_table_offset + le.mz_header->new_header_offset);
+    fprintf(stdout, "Number of import table entries: %d (0x%08x)\n", le.le_header->number_of_import_table_entries, le.le_header->number_of_import_table_entries);
+    fprintf(stdout, "Import procedure name table offset: %d (0x%08x)\n", le.le_header->import_procedure_name_table_offset, le.le_header->import_procedure_name_table_offset);
+    fprintf(stdout, "Per page checksum table offset: %d (0x%08x)\n", le.le_header->per_page_checksum_table_offset, le.le_header->per_page_checksum_table_offset);
+    fprintf(stdout, "Enumerated data pages offset: %d (0x%08x)\n", le.le_header->enumerated_data_pages_offset, le.le_header->enumerated_data_pages_offset);
+    fprintf(stdout, "Number of enumerated data pages: %d (0x%08x)\n", le.le_header->number_of_enumerated_data_pages, le.le_header->number_of_enumerated_data_pages);
+    fprintf(stdout, "Non-resident name table offset: %d (0x%08x)\n", le.le_header->non_resident_name_table_offset, le.le_header->non_resident_name_table_offset);
+    fprintf(stdout, "Non-resident name table size: %d bytes (0x%08x)\n", le.le_header->non_resident_name_table_size, le.le_header->non_resident_name_table_size);
+    fprintf(stdout, "Non-resident name table checksum: %d (0x%08x)\n", le.le_header->non_resident_name_table_checksum, le.le_header->non_resident_name_table_checksum);
+    fprintf(stdout, "Debug information offset: %d (0x%08x)\n", le.le_header->debug_offset, le.le_header->debug_offset);
+    fprintf(stdout, "Debug information size: %d bytes (0x%08x)\n", le.le_header->debug_size, le.le_header->debug_size);
+    fprintf(stdout, "Heap size: %d bytes (0x%08x)\n", le.le_header->heap_size, le.le_header->heap_size);
+    fprintf(stdout, "Stack size: %d bytes (0x%08x)\n", le.le_header->stack_size, le.le_header->stack_size);
+    if (le.le_header->magic == 0x454C) le_print_vxd_info(le.le_header->reserved.vxd);
 };
 
 void le_print_object_flags(uint32_t flags, uint16_t magic) {
@@ -334,7 +344,7 @@ void le_print_objects_map(struct le le) {
 
     if (le.le_header->object_table_offset > 0) {
         fprintf(stdout, "\n");
-        fprintf(stdout, "Objects:\n");
+        fprintf(stdout, "Objects (%u objects):\n", le.le_header->number_of_objects);
         offset = le.le_header->object_table_offset + le.mz_header->new_header_offset;
         for (int i = 0; i < le.le_header->number_of_objects; i++) {
             uint32_t size;
@@ -347,7 +357,7 @@ void le_print_objects_map(struct le le) {
             size = readdword(offset);
             offset = offset + 4;
             relocation_base_address = readdword(offset);
-            relocation_base_address = le.mz_header->new_header_offset +  le.le_header->object_table_offset + (i * relocation_base_address);
+            //relocation_base_address = le.mz_header->new_header_offset +  le.le_header->object_table_offset + (i * relocation_base_address);
             offset = offset + 4;
             flags = readdword(offset);
             offset = offset + 4;
@@ -357,7 +367,7 @@ void le_print_objects_map(struct le le) {
             offset = offset + 4;
             reserved = readdword(offset);
             offset = offset + 4;
-            fprintf(stdout, "Object 0x%04x (%u)\n", i, i);
+            fprintf(stdout, "Object %u\n", i + 1);
             fprintf(stdout, "- Virtual size: 0x%08x (%u bytes)\n", size, size);
             fprintf(stdout, "- Relocation base address: 0x%08x (%u)\n", relocation_base_address, relocation_base_address);
             fprintf(stdout, "- Page map index: 0x%08x (%u)\n", page_table_index, page_table_index);
@@ -370,28 +380,26 @@ void le_print_objects_map(struct le le) {
 void le_print_object_page_tables(struct le le) {
     size_t offset;
     
-    if (le.le_header->object_map_offset > 0) {
+    if (le.le_header->number_of_pages > 0) {
         uint32_t page_data_offset;
         uint16_t page_data_size;
         uint16_t page_data_flags;
         uint32_t page_exe_offset;
 
-        fprintf(stdout, "\nBROKEN FIXME!!!!!\n");
-        fprintf(stdout, "Object page table:\n");
+        fprintf(stdout, "Object page table (%u entries):\n", le.le_header->number_of_pages);
+        offset = le.mz_header->new_header_offset + le.le_header->object_map_offset;
         for (int i = 0; i < le.le_header->number_of_pages; i++) {
-            offset = le.mz_header->new_header_offset + le.le_header->object_table_offset + i * le.le_header->exe_page_size;
             if (le.le_header->magic == 0x454C) { // LE
-
-                page_data_offset = ((readbyte(offset) << 16) | (readbyte(offset + 1) << 8) | readbyte(offset + 2));
-                offset = offset + 4;
-                if (i + 1 == le.le_header->number_of_pages) {
+                page_data_flags = readword(offset);
+                offset = offset + 2;
+                if (i + 1 == le.le_header->number_of_pages && le.le_header->page.size_of_last_page > 0) {
                     page_data_size = le.le_header->page.size_of_last_page;
                 }
                 else {
                     page_data_size = le.le_header->exe_page_size;
                 }
-                page_data_flags = readbyte(offset);
-                offset++;
+                page_data_offset = ((readword(offset) - 1) * le.le_header->exe_page_size) + le.le_header->enumerated_data_pages_offset;
+                offset = offset + 2;
             }
             else { // LX
                 page_data_offset = readdword(offset) << le.le_header->page.page_shift_offset;
@@ -546,7 +554,9 @@ void le_print_entry_table(struct le le) {
 void le_print_ddb(struct le le) {
     size_t offset;
     fprintf(stdout, "\n");
-    if (le.le_header->magic == 0x454C && le.le_header->reserved.vxd.windows_vxd_version_info_resource_length > 0) {
+    if (le.le_header->magic == 0x454C && ((le.le_header->exe_flags & 0x00038000UL) == 0x00008000) && 
+    ((le.le_header->exe_flags & 0x00000300UL) == 0x00000000) && (le.le_header->os_type == 0x04) &&
+    (le.le_header->entry_table_offset != 0)) {
         offset = le.le_header->reserved.vxd.windows_vxd_version_info_resource_offset;
         fprintf(stdout, "DDB Info:\n");
         print_hex_dump(offset, le.le_header->reserved.vxd.windows_vxd_version_info_resource_length, offset);
@@ -576,7 +586,7 @@ void dumple() {
     le.mz_header = readdata(0);
     le.le_header = readdata(le.mz_header->new_header_offset);
 
-    le_print_header(le.le_header);
+    le_print_header(le);
     le_print_exports(le);
     le_print_imports(le);
     le_print_objects_map(le);
