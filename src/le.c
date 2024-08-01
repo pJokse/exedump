@@ -278,6 +278,7 @@ void le_print_imports(struct le le) {
 
     if (le.le_header->import_procedure_name_table_offset > 0) {
         fprintf(stdout, "\n");
+        fprintf(stdout, "BROKEN FIXME!!!\n");
         fprintf(stdout, "Import procedure table:\n");
         offset = le.le_header->import_procedure_name_table_offset + le.mz_header->new_header_offset;
         if (readbyte(offset) == 0) {
@@ -409,10 +410,8 @@ void le_print_object_page_tables(struct le le) {
                 page_data_flags = readword(offset);
                 offset = offset + 2;
             }
-            //page_exe_offset = le.le_header->object_table_offset + le.le_header->object_table_offset + (i * 0x18);
             fprintf(stdout, "Page 0x%08x (%u)\n", i + 1, i + 1);
             fprintf(stdout, "- Page Offset: 0x%08x (%u)\n", page_data_offset, page_data_offset);
-            //fprintf(stdout, "- .EXE offset: 0x%08x (%u)\n", page_exe_offset, page_exe_offset);
             fprintf(stdout, "- Page size: 0x%04x (%u bytes)\n", page_data_size, page_data_size);
             le_print_page_flags(page_data_flags);
             //print_hex_dump(page_data_offset, page_data_size, page_data_offset);
@@ -552,14 +551,99 @@ void le_print_entry_table(struct le le) {
 }
 
 void le_print_ddb(struct le le) {
-    size_t offset;
+    size_t offset, offset2;
+    uint16_t ordinal;
+
+    uint8_t buffer[256];
+    uint8_t *name;
+
     fprintf(stdout, "\n");
     if (le.le_header->magic == 0x454C && ((le.le_header->exe_flags & 0x00038000UL) == 0x00008000) && 
     ((le.le_header->exe_flags & 0x00000300UL) == 0x00000000) && (le.le_header->os_type == 0x04) &&
     (le.le_header->entry_table_offset != 0)) {
-        offset = le.le_header->reserved.vxd.windows_vxd_version_info_resource_offset;
-        fprintf(stdout, "DDB Info:\n");
-        print_hex_dump(offset, le.le_header->reserved.vxd.windows_vxd_version_info_resource_length, offset);
+        offset = le.le_header->entry_table_offset + le.mz_header->new_header_offset;
+        ordinal = 1;
+        while (readbyte(offset) > 0) {
+            uint8_t count;
+            uint8_t type;
+            uint16_t obj_number;
+            uint8_t flags;
+            uint32_t obj_offset;
+            uint16_t callgate;
+
+            count = readbyte(offset);
+            offset++;
+            type = readbyte(offset);
+            offset++;
+            obj_number = readword(offset);
+            offset = offset + 2;
+            for (int i = 0; count > 0; count--) {
+                if (i != 0) fprintf(stdout, "\n");
+                switch (type) {
+                case 0x00: // Unused
+                    break;
+                case 0x01: // 16bit entry
+                    flags = readbyte(offset);
+                    offset++;
+                    obj_offset = readdword(offset);
+                    offset = offset + 4;
+                    //fprintf(stdout, "Ordinal: %u, Flags: 0x%02x, Offset: 0x%08x", ordinal, flags, obj_offset);
+                    break;
+                case 0x02: // 286 gate entry call
+                    flags = readbyte(offset);
+                    offset++;
+                    obj_offset = readdword(offset);
+                    offset = offset + 4;
+                    callgate = readword(offset);
+                    offset + 2;
+                    //fprintf(stdout, "Ordinal: %u, Flags: 0x%02x, Callgate: 0x%04x, Offset 0x%08x", ordinal, flags, obj_offset);
+                    break;
+                case 0x03: // 32bit entry
+                    flags = readbyte(offset);
+                    offset++;
+                    obj_offset = readdword(offset);
+                    offset = offset + 4;
+                    //fprintf(stdout, "Ordinal: %u, Flags: 0x%02x, Offset: 0x%08x", ordinal, flags, obj_offset);
+                    break;
+                case 0x04: // Forwarder entry
+                    flags = readbyte(offset);
+                    offset++;
+                    obj_offset = readdword(offset);
+                    offset = offset + 4;
+                    //fprintf(stdout, "Ordinal: %u, Flags: 0x%02x, Offset: 0x%08x", ordinal, flags, obj_offset);
+                    break;
+                case 0x80: // Parameter typing info present
+                    //fprintf(stdout, "0x80 BROKEN!\n");
+                    break;
+                default:
+                    //fprintf(stdout, "Unknown\n");
+                    break;
+                }
+                le_get_name_by_ordinal(le, ordinal, name);
+                fprintf(stdout, "ordinal %u name %s\n", ordinal, name);
+                ordinal++;
+            }
+        }
+        fprintf(stdout, "DDB Info (Windows VxD Driver):\n");
+        fprintf(stdout, "- Object %u, 0x%08x (%u)\n", 1, 0, 0);
+        fprintf(stdout, "- File offset: 0x%08x (%u bytes)\n", 0, 0);
+        fprintf(stdout, "- Located at page %u, offset 0x%08x (%u) plus page offset 0x%04x / 0x%04x\n", 0, 0, 0, 0, le.le_header->exe_page_size);
+        fprintf(stdout, "- Load base address: 0x%08x (%u)\n", 0, 0);
+        fprintf(stdout, "- DDB_Next: 0x%08x\n");
+        fprintf(stdout, "- DDB_SDK_Version: %u.%u (0x%04x)\n");
+        fprintf(stdout, "- DDB_Req_Device_Number: 0x%04x\n");
+        fprintf(stdout, "- DDB_Dev_*_Version: %u.%u\n");
+        fprintf(stdout, "- DDB_Flags: 0x%04x\n");
+        fprintf(stdout, "- DDB_Name: %s\n", "hest");
+        fprintf(stdout, "- DDB_Init_Order: 0x%08x\n");
+        fprintf(stdout, "- DDB_Control_Proc: 0x%08x\n");
+        fprintf(stdout, "- DDB_V86_API_Proc: 0x%08x\n");
+        fprintf(stdout, "- DDB_PM_API_Proc: 0x%08x\n");
+        fprintf(stdout, "- DDB_V86_API_CSIP: %04x:%04x\n");
+        fprintf(stdout, "- DDB_PM_API_CSIP: %04x:%04x\n");
+        fprintf(stdout, "- DDB_Reference_Data: 0x%08x\n");
+        fprintf(stdout, "- DDB_Service_Table_Ptr: 0x%08x\n");
+        fprintf(stdout, "- DDB_Service_Table_Size: 0x%08x\n");
         fprintf(stdout, "\n");
     }
     else {
@@ -576,6 +660,34 @@ void le_print_debug(struct le le) {
     else {
         fprintf(stdout, "No DEBUG section.\n");
     }
+}
+
+void le_get_name_by_ordinal(struct le le, uint16_t ordinal, char *name) {
+    size_t offset, offset2;
+    uint16_t ordinal2;
+    uint8_t buffer[256];
+
+    if (le.le_header->resident_names_table_offset > 0) {
+        offset = le.le_header->resident_names_table_offset + le.mz_header->new_header_offset;
+        while (readbyte(offset) > 0) {
+            memset(buffer, 0, 256);
+            int len = readbyte(offset);
+            offset++;
+            for (int i = 0; i < len; i++) {
+                buffer[i] = readbyte(offset);
+                offset++;
+            }
+            ordinal2 = readword(offset);
+            offset = offset + 2;
+            fprintf(stdout, "%u\t\t%s\n", ordinal, buffer);
+            if (ordinal2 == ordinal) {
+                name = (uint8_t)(strlen(buffer) + 1);
+                strcpy(name, buffer);
+                break;
+            }
+        }
+    }
+
 }
 
 void dumple() {
