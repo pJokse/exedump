@@ -550,12 +550,45 @@ void le_print_entry_table(struct le le) {
     }
 }
 
+void le_get_name_by_ordinal(struct le le, uint16_t ordinal, char *name) {
+    size_t offset, offset2;
+    uint16_t ordinal2;
+    uint8_t buffer[256];
+
+    if (le.le_header->resident_names_table_offset > 0) {
+        offset = le.le_header->resident_names_table_offset + le.mz_header->new_header_offset;
+        while (readbyte(offset) > 0) {
+            memset(buffer, 0, 256);
+            int len = readbyte(offset);
+            offset++;
+            for (int i = 0; i < len; i++) {
+                buffer[i] = readbyte(offset);
+                offset++;
+            }
+            ordinal2 = readword(offset);
+            offset = offset + 2;
+            fprintf(stdout, "%u\t\t%s\n", ordinal2, buffer);
+            fprintf(stdout, "HESTLEN %lu\n", strlen(buffer));
+            if (1 == ordinal) {
+                fprintf(stdout, "HEST1\n");
+                name = (char *)malloc(strlen(buffer) + 1);
+                fprintf(stdout, "HEST2\n");
+                strcpy(name, buffer);
+                fprintf(stdout, "HEST3 %s\n", name);
+                break;
+            }
+        }
+    }
+    name = (char *)malloc(strlen("NONE") + 1);
+    strcpy(name, "NONE");
+}
+
 void le_print_ddb(struct le le) {
     size_t offset, offset2;
     uint16_t ordinal;
 
     uint8_t buffer[256];
-    uint8_t *name;
+    char *name;
 
     fprintf(stdout, "\n");
     if (le.le_header->magic == 0x454C && ((le.le_header->exe_flags & 0x00038000UL) == 0x00008000) && 
@@ -660,34 +693,6 @@ void le_print_debug(struct le le) {
     else {
         fprintf(stdout, "No DEBUG section.\n");
     }
-}
-
-void le_get_name_by_ordinal(struct le le, uint16_t ordinal, char *name) {
-    size_t offset, offset2;
-    uint16_t ordinal2;
-    uint8_t buffer[256];
-
-    if (le.le_header->resident_names_table_offset > 0) {
-        offset = le.le_header->resident_names_table_offset + le.mz_header->new_header_offset;
-        while (readbyte(offset) > 0) {
-            memset(buffer, 0, 256);
-            int len = readbyte(offset);
-            offset++;
-            for (int i = 0; i < len; i++) {
-                buffer[i] = readbyte(offset);
-                offset++;
-            }
-            ordinal2 = readword(offset);
-            offset = offset + 2;
-            fprintf(stdout, "%u\t\t%s\n", ordinal, buffer);
-            if (ordinal2 == ordinal) {
-                name = (uint8_t)(strlen(buffer) + 1);
-                strcpy(name, buffer);
-                break;
-            }
-        }
-    }
-
 }
 
 void dumple() {
