@@ -550,7 +550,7 @@ void le_print_entry_table(struct le le) {
     }
 }
 
-void le_get_name_by_ordinal(struct le le, uint16_t ordinal, char *name) {
+void le_get_resident_name_by_ordinal(struct le le, uint16_t ordinal, char **name) {
     size_t offset, offset2;
     uint16_t ordinal2;
     uint8_t buffer[256];
@@ -567,20 +567,45 @@ void le_get_name_by_ordinal(struct le le, uint16_t ordinal, char *name) {
             }
             ordinal2 = readword(offset);
             offset = offset + 2;
-            fprintf(stdout, "%u\t\t%s\n", ordinal2, buffer);
-            fprintf(stdout, "HESTLEN %lu\n", strlen(buffer));
-            if (1 == ordinal) {
-                fprintf(stdout, "HEST1\n");
-                name = (char *)malloc(strlen(buffer) + 1);
-                fprintf(stdout, "HEST2\n");
-                strcpy(name, buffer);
-                fprintf(stdout, "HEST3 %s\n", name);
+            if (ordinal2 == ordinal) {
+                *name = (char *)malloc(strlen(buffer) + 1);
+                strcpy(*name, buffer);
                 break;
+            }
+            else {
+                *name = "";
             }
         }
     }
-    name = (char *)malloc(strlen("NONE") + 1);
-    strcpy(name, "NONE");
+}
+
+void le_get_non_resident_name_by_ordinal(struct le le, uint16_t ordinal, char **name) {
+    size_t offset, offset2;
+    uint16_t ordinal2;
+    uint8_t buffer[256];
+
+    if (le.le_header->non_resident_name_table_offset > 0) {
+        offset = le.le_header->non_resident_name_table_offset;
+        while (readbyte(offset) > 0) {
+            memset(buffer, 0, 256);
+            int len = readbyte(offset);
+            offset++;
+            for (int i = 0; i < len; i++) {
+                buffer[i] = readbyte(offset);
+                offset++;
+            }
+            ordinal2 = readword(offset);
+            offset = offset + 2;
+            if (ordinal2 == ordinal) {
+                *name = (char *)malloc(strlen(buffer) + 1);
+                strcpy(*name, buffer);
+                break;
+            }
+            else {
+                *name = "";
+            }
+        }
+    }
 }
 
 void le_print_ddb(struct le le) {
@@ -652,7 +677,10 @@ void le_print_ddb(struct le le) {
                     //fprintf(stdout, "Unknown\n");
                     break;
                 }
-                le_get_name_by_ordinal(le, ordinal, name);
+                le_get_resident_name_by_ordinal(le, ordinal, &name);
+                
+                fprintf(stdout, "ordinal %u name %s\n", ordinal, name);
+                le_get_non_resident_name_by_ordinal(le, ordinal, &name);
                 fprintf(stdout, "ordinal %u name %s\n", ordinal, name);
                 ordinal++;
             }
