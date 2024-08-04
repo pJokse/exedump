@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "le.h"
 #include "main.h"
@@ -678,9 +679,10 @@ void le_print_ddb(struct le le) {
                     break;
                 }
                 le_get_resident_name_by_ordinal(le, ordinal, &name);
-                
-                fprintf(stdout, "ordinal %u name %s\n", ordinal, name);
-                le_get_non_resident_name_by_ordinal(le, ordinal, &name);
+                if (name == "") {
+                    //fprintf(stdout, "ordinal %u name %s\n", ordinal, name);
+                    le_get_non_resident_name_by_ordinal(le, ordinal, &name);
+                }
                 fprintf(stdout, "ordinal %u name %s\n", ordinal, name);
                 ordinal++;
             }
