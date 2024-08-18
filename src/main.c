@@ -124,8 +124,8 @@ void dump(char *filename) {
     file_type = get_filetype(filename);
 
     fprintf(stdout, "File: %s\n", filename);
-    fprintf(stdout, "Size: %lu bytes (0x%08lx)\n", file_size, file_size);
-    fprintf(stdout, "Extended Header Offset: %u (0x%04x)\n", ((binary[0x3D] << 8) + binary[0x3C]), ((binary[0x3D] << 8) + binary[0x3C]));
+    fprintf(stdout, "Size: 0x%08lx bytes (%lu)\n", file_size, file_size);
+    ((binary[0x3D] << 8) + binary[0x3C]) ? fprintf(stdout, "Extended Header Offset: 0x%04x (%u)\n", ((binary[0x3D] << 8) + binary[0x3C]), ((binary[0x3D] << 8) + binary[0x3C])):fprintf(stdout, "No extended header\n");
     fprintf(stdout, "Filetype: %s\n", exe_filetype[file_type].description);
 
     fclose(fd);
@@ -139,6 +139,9 @@ void dump(char *filename) {
             dumple();
             break;
         case FILETYPE_NE:
+            fprintf(stdout, "MZ Header:\n");
+            dumpmz();
+            fprintf(stdout, "NE Header:\n");
             dumpne();
             break;
         case FILETYPE_PE:
