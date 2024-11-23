@@ -83,7 +83,7 @@ void ne_print_header(const struct ne_header *header) {
     fprintf(stdout, "Initial stack pointer: 0x%08x (%u)\n", header->initial_stack_pointer, header->initial_stack_pointer);
     fprintf(stdout, "Number of segments: 0x%04x (%u)\n", header->number_of_segments, header->number_of_segments);
     fprintf(stdout, "Number of module references: 0x%04x (%u)\n", header->number_of_module_references, header->number_of_module_references);
-    fprintf(stdout, "Non-residential names table offset: 0x%08x (%u)\n", header->non_resident_names_table_offset, header->non_resident_names_table_offset);
+    fprintf(stdout, "Non-resident names table size: 0x%08x bytes (%u)\n", header->non_resident_names_table_size, header->non_resident_names_table_size);
     fprintf(stdout, "Segment table offset: 0x%04x (%u)\n", header->segment_table_offset, header->segment_table_offset);
     fprintf(stdout, "Resource table offset: 0x%04x (%u)\n", header->resource_table_offset, header->resource_table_offset);
     fprintf(stdout, "Resident names table offset: 0x%04x (%u)\n", header->resident_name_table_offset, header->resident_name_table_offset);
@@ -100,6 +100,14 @@ void ne_print_header(const struct ne_header *header) {
     fprintf(stdout, "Minimum expected windows version: %d.%d (0x%04x)\n", (header->expected_minimum_windows_version >> 8), (header->expected_minimum_windows_version & 0xFF), header->expected_minimum_windows_version);
 }
 
+void ne_print_exports(const struct ne_header *header) {
+
+}
+
+void ne_print_imports(const struct ne_header *header) {
+
+}
+
 void dumpne() {
     struct ne ne;
 
@@ -107,4 +115,6 @@ void dumpne() {
     ne.ne_header = readdata(ne.mz_header->new_header_offset);
 
     ne_print_header(ne.ne_header);
+    //ne_print_exports(ne.ne_header);
+    //ne_print_imports(ne.ne_header);
 }
