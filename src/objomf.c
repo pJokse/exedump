@@ -21,6 +21,13 @@ void dumpomf() {
     uint16_t group_name_index;
     uint8_t segment_attrib;
     uint16_t segment_index;
+    uint8_t module_type;
+    uint32_t enumerated_data_offset;
+    uint32_t iterated_data_offset;
+    uint8_t allocation;
+    uint8_t flags;
+    uint8_t attributes;
+    uint8_t segment_type;
 
     offset = 0;
     records_count = 0;
@@ -171,7 +178,6 @@ void dumpomf() {
                 is32bit = 0xFF;
                 break;
             case OMF_MODEND16:
-                uint8_t module_type;
                 module_type = readbyte(record_offset);
                 record_offset++;
                 is32bit ? fprintf(stdout, "MODEND32: ") : fprintf(stdout, "MODEND16: ");
@@ -276,7 +282,6 @@ void dumpomf() {
                 fprintf(stdout, "\n");
                 break;
             case OMF_GRPDEF:
-                uint8_t segment_type;
                 fprintf(stdout, "GRPDEF: ");
                 if (readbyte(record_offset) & 0x80) {
                     group_name_index = readindex(record_offset);
@@ -468,7 +473,6 @@ void dumpomf() {
             case OMF_LEDATA32:
                 is32bit = 0xFF;
             case OMF_LEDATA16:
-                uint32_t enumerated_data_offset;
                 is32bit ? fprintf(stdout, "LEDATA32: ") : fprintf(stdout, "LEDATA16: ");
                 if (is32bit) {
                     segment_index = readword(record_offset);
@@ -489,7 +493,6 @@ void dumpomf() {
             case OMF_LIDATA32:
                 is32bit = 0xFF;
             case OMF_LIDATA16:
-                uint32_t iterated_data_offset;
                 is32bit ?  fprintf(stdout, "LIDATA32: ") : fprintf(stdout, "LIDATA16: ");
                 if (is32bit) {
                     segment_index = readword(record_offset);
@@ -508,7 +511,6 @@ void dumpomf() {
                 fprintf(stdout, "\n");
                 break;
             case OMF_COMDEF:
-                uint8_t allocation;
                 fprintf(stdout, "COMDEF:\n");
                 while (record_offset < offset + omf_record_header->record_size - 1) {
                     fprintf(stdout, "- ");
@@ -593,8 +595,6 @@ void dumpomf() {
                 is32bit = 0xFF;
                 break;
             case OMF_COMDAT16:
-                uint8_t flags;
-                uint8_t attributes;
                 is32bit ? fprintf(stdout, "COMDAT32: ") : fprintf(stdout, "COMDAT16: ");
                 flags = readbyte(record_offset);
                 record_offset++;

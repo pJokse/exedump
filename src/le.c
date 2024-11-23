@@ -516,8 +516,8 @@ void le_print_entry_table(struct le le) {
                     obj_offset = readdword(offset);
                     offset = offset + 4;
                     callgate = readword(offset);
-                    offset + 2;
-                    fprintf(stdout, "Ordinal: %u, Flags: 0x%02x, Callgate: 0x%04x, Offset 0x%08x", ordinal, flags, obj_offset);
+                    offset = offset + 2;
+                    fprintf(stdout, "Ordinal: %u, Flags: 0x%02x, Callgate: 0x%04x, Offset 0x%08x", ordinal, flags, callgate, obj_offset);
                     break;
                 case 0x03: // 32bit entry
                     flags = readbyte(offset);
@@ -654,7 +654,7 @@ void le_print_ddb(struct le le) {
                     obj_offset = readdword(offset);
                     offset = offset + 4;
                     callgate = readword(offset);
-                    offset + 2;
+                    offset = offset + 2;
                     //fprintf(stdout, "Ordinal: %u, Flags: 0x%02x, Callgate: 0x%04x, Offset 0x%08x", ordinal, flags, obj_offset);
                     break;
                 case 0x03: // 32bit entry
@@ -679,7 +679,7 @@ void le_print_ddb(struct le le) {
                     break;
                 }
                 le_get_resident_name_by_ordinal(le, ordinal, &name);
-                if (name == "") {
+                if (strcmp(name, "")) {
                     //fprintf(stdout, "ordinal %u name %s\n", ordinal, name);
                     le_get_non_resident_name_by_ordinal(le, ordinal, &name);
                 }
