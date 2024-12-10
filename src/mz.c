@@ -25,13 +25,27 @@ void mz_print_header(const struct mz_header *header) {
 
 void dumpmz() {
     struct mz mz;
+    struct borland_header *bhdr;
+    uint32_t off;
+    int isborland = 0;
 
     mz.header = readdata(0);
     mz.entry = realaddress(mz.header->cs, mz.header->ip);
     mz.relocation_table = readdata(mz.header->relocation_table_offset);
     mz.start = mz.header->header_paragraphs_size * 16;
     mz.code_start = (16 * mz.header->header_paragraphs_size + (16 * mz.header->cs + mz.header->ip));
+    off = mz.header->relocation_table_offset - 0x1c;
 
+    if(off > 0) {
+        bhdr = (struct borland_header *)readdata(0x1c);
+        if(bhdr->id == 0xfb && bhdr->unk0 == 0x0001 && ( bhdr->unk1 == 0x726a || bhdr->unk1 == 0x6a72)) {
+            fprintf(stdout, "EXE has Borland VROOM extension headers.\n");
+            fprintf(stdout, "- Header size: %u bytes (0x%02x), Location 0x%02x\n", off, off, 0x1c);
+            fprintf(stdout, "- TLINK version %u.%u\n", bhdr->version >> 4, bhdr->version & 0xf);
+            isborland = 1;
+        }
+    }
+    
     mz_print_header(mz.header);
     fprintf(stdout, "\n");
     for (int i = 0; i < mz.header->blocks_in_file; i++) {
@@ -46,10 +60,13 @@ void dumpmz() {
         }
     }
     fprintf(stdout,"\n");
-    if (mz.header->number_of_relocations >0) {
+    if (mz.header->number_of_relocations > 0) {
         fprintf(stdout, "Relocation table:\n");
         for (int i = 0; i < mz.header->number_of_relocations; i++) {
             fprintf(stdout, "Relocation %u 0x%04x:0x%04x, File offset: 0x%08x (%u)\n", i, mz.relocation_table[i].segment, mz.relocation_table[i].offset, (mz.start + realaddress(mz.relocation_table[i].segment, mz.relocation_table[i].offset)), (mz.start + realaddress(mz.relocation_table[i].segment, mz.relocation_table[i].offset)));
         }
+    }
+    if(isborland) {
+        
     }
 }

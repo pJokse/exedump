@@ -100,12 +100,107 @@ void ne_print_header(const struct ne_header *header) {
     fprintf(stdout, "Minimum expected windows version: %d.%d (0x%04x)\n", (header->expected_minimum_windows_version >> 8), (header->expected_minimum_windows_version & 0xFF), header->expected_minimum_windows_version);
 }
 
-void ne_print_exports(const struct ne_header *header) {
+void ne_print_exports(struct ne ne) {
+    size_t offset;
+    uint8_t len, index, flags, segment;
+    uint16_t ordinal, off, count;
 
+    if (ne.ne_header->entry_table_offset > 0) {
+        fprintf(stdout, "\n");
+        fprintf(stdout, "Entry table:\n");
+        offset = ne.ne_header->entry_table_offset + ne.mz_header->new_header_offset;
+        count = 0;
+        while(readbyte(offset) != 0) {
+            len = readbyte(offset);
+            offset++;
+            index = readbyte(offset);
+            offset++;
+            for(int i = 0; i < len; i++) {
+                if(index == 0xff) {
+                    flags = readbyte(offset);
+                    offset++;
+                    if(readword(offset) != 0x3fcd) {
+                        // something here
+                    }
+                    offset = offset + 2;
+                    segment = readbyte(offset);
+                    offset++;
+                    off = readword(offset);
+                    offset = offset + 2;
+                }
+                else if(index == 0x00) {
+                    // something here
+                }
+                else {
+                    flags = readbyte(offset);
+                    offset++;
+                    segment = index;
+                    off = readword(offset);
+                    offset = offset + 2;
+                }
+            }
+            fprintf(stdout, "Ordinal: %u, %u:0x%04x Flags: 0x%02x\n", count, segment, off, flags);
+            count++;
+        }
+        
+    }
+    
+    if (ne.ne_header->resident_name_table_offset) {
+        fprintf(stdout, "\n");
+        fprintf(stdout, "Exports (Resident):\n");
+        fprintf(stdout, "Name:\t\tOrdinal:\n");
+        offset = ne.ne_header->resident_name_table_offset + ne.mz_header->new_header_offset;
+        len = readbyte(offset);
+        offset++;
+        for(int i = 0; i < len; i++) {
+            fprintf(stdout, "%c", readbyte(offset));
+            offset++;
+        }
+        fprintf(stdout, "\t\t0\n");
+        while(readbyte(offset) != 0) {
+            ordinal++;
+            len = readbyte(offset);
+            offset++;
+            for(int i = 0; i < len; i++) {
+                fprintf(stdout, "%c", readbyte(offset));
+                offset++;
+            }
+            fprintf(stdout, "\t\t%u\n", ordinal);
+        }
+
+    }
+    if (ne.ne_header->non_resident_names_table_size > 0) {
+        fprintf(stdout, "\n");
+        fprintf(stdout, "Exports (Non-resident):\n");
+        fprintf(stdout, "Name:\t\tOrdinal:\n");
+        offset = ne.ne_header->non_resident_names_table_offset;
+        len = readbyte(offset);
+        offset++;
+        for(int i = 0; i < len; i++) {
+            fprintf(stdout, "%c", readbyte(offset));
+            offset++;
+        }
+        fprintf(stdout, "\t\t0\n");
+        offset = offset + 2;
+        while(readbyte(offset) != 0) {
+            ordinal++;
+            len = readbyte(offset);
+            offset++;
+            for(int i = 0; i < len; i++) {
+                fprintf(stdout, "%c", readbyte(offset));
+                offset++;
+            }
+            fprintf(stdout, "\t\t%u\n", ordinal);
+            offset = offset + 2;
+        }
+
+    }
 }
 
-void ne_print_imports(const struct ne_header *header) {
-
+void ne_print_imports(struct ne ne) {
+    fprintf(stdout, "\n");
+    fprintf(stdout, "Imports:\n");
+    fprintf(stdout, "Ordinal:\t\tName:\n");
 }
 
 void dumpne() {
@@ -115,6 +210,6 @@ void dumpne() {
     ne.ne_header = readdata(ne.mz_header->new_header_offset);
 
     ne_print_header(ne.ne_header);
-    //ne_print_exports(ne.ne_header);
-    //ne_print_imports(ne.ne_header);
+    ne_print_exports(ne);
+    ne_print_imports(ne);
 }

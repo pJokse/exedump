@@ -39,6 +39,18 @@ struct ne_header {
     uint16_t expected_minimum_windows_version;
 };
 
+struct export {
+    uint16_t ordinal;
+    char *name;
+};
+
+struct entry {
+    uint8_t flags;
+    uint8_t segment;
+    uint16_t offset;
+    char *name;
+};
+
 struct ne {
     const struct mz_header *mz_header;
 

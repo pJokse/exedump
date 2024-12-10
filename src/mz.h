@@ -41,6 +41,14 @@ struct mz {
     uint32_t code_start;
 };
 
+struct  borland_header { //borland MZ heaader extension
+  uint16_t unk0;
+  uint8_t  id;
+  uint8_t  version;
+  uint16_t unk1;
+  uint8_t  unk2[34];
+};
+
 #pragma pack()
 
 #endif

@@ -20,8 +20,8 @@ static const char help_message[] =
     "Options:\n"
     "\t-h, --help            Show this message.\n"
     "\t-v, --verbose         Be more verbose.\n"
-    "\t-x, --hex-dump        Include hex dumps\n\n"
-    "\t-d, --dos-header      Always show the MZ part regardless of the type of executable."
+    "\t-x, --hex-dump        Include hex dumps\n"
+    "\t-d, --dos-header      Always show the MZ part for executables that start with a DOS executable header.\n\n"
     "Supported formats:\n"
     "\t MZ EXE (DOS) .exe\n"
     "\t LE/LX EXE (Windows VXD, OS/2 Executeables) .exe, .dll, .vxd, .386, .sys\n"
@@ -46,8 +46,8 @@ static const filetype exe_filetype[] = { // ENUM filetype, short text, long desc
     { FILETYPE_PHARLAP_P3, "P3", "Phar Lap 386 Executable (.exe, .exp)" },
     { FILETYPE_OMF_OBJ, "OBJ_OMF", "OMF Object File" },
     { FILETYPE_OMF_LIB, "LIB_OMF", "OMF Library File" },
-    { FILETYPE_SYM, "SYM", "Windows Symbolic Debug File (*.sym)" },
-    { FILETYPE_W3, "W3", "Windows VxD Compacted file (*.exe, *.vxd)" },
+    { FILETYPE_SYM, "SYM", "Windows Symbolic Debug File (.sym)" },
+    { FILETYPE_W3, "W3", "Windows VxD Compacted file (.exe, .vxd)" },
 };
 
 uint8_t get_filetype(char *filename) {
